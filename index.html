@@ -1,0 +1,3032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目管理系统</title>
+<style>
+/* ========== CSS Variables ========== */
+:root {
+  --primary: #4F6CF7;
+  --primary-light: #8BA0FF;
+  --primary-dark: #3A54D4;
+  --success: #10B981;
+  --success-light: #D1FAE5;
+  --warning: #F59E0B;
+  --warning-light: #FEF3C7;
+  --danger: #EF4444;
+  --danger-light: #FEE2E2;
+  --info: #3B82F6;
+  --info-light: #DBEAFE;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+  --white: #FFFFFF;
+  --sidebar-w: 240px;
+  --header-h: 60px;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --transition: 0.2s ease;
+}
+
+/* ========== Reset & Base ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-800);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ========== Layout ========== */
+.app { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--gray-900);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform var(--transition);
+}
+.sidebar-logo {
+  padding: 20px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-bottom: 1px solid var(--gray-700);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-logo .logo-icon {
+  width: 32px; height: 32px;
+  background: var(--primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-section { margin-bottom: 8px; }
+.nav-section-title {
+  padding: 8px 20px 4px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  letter-spacing: 0.05em;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background var(--transition);
+  font-size: 0.93rem;
+  border-left: 3px solid transparent;
+  user-select: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.08); }
+.nav-item.active {
+  background: rgba(79,108,247,0.15);
+  border-left-color: var(--primary);
+  color: var(--primary-light);
+}
+.nav-item .nav-icon { width: 20px; text-align: center; font-size: 1rem; }
+.nav-item .nav-badge {
+  margin-left: auto;
+  background: var(--danger);
+  color: white;
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Main Content */
+.main { flex: 1; margin-left: var(--sidebar-w); display: flex; flex-direction: column; }
+
+/* Header */
+.header {
+  height: var(--header-h);
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-title { font-size: 1.15rem; font-weight: 600; color: var(--gray-900); }
+.breadcrumb { display: flex; align-items: center; gap: 6px; color: var(--gray-400); font-size: 0.85rem; }
+.breadcrumb span { color: var(--gray-700); }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.header-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition);
+}
+.header-btn.primary {
+  background: var(--primary);
+  color: white;
+}
+.header-btn.primary:hover { background: var(--primary-dark); }
+.header-btn.outline {
+  background: transparent;
+  border: 1px solid var(--gray-300);
+  color: var(--gray-600);
+}
+.header-btn.outline:hover { background: var(--gray-50); }
+
+/* Content Area */
+.content { flex: 1; padding: 24px; overflow-y: auto; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ========== Dashboard ========== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: box-shadow var(--transition);
+}
+.stat-card:hover { box-shadow: var(--shadow-md); }
+.stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+.stat-icon.blue { background: var(--info-light); color: var(--info); }
+.stat-icon.green { background: var(--success-light); color: var(--success); }
+.stat-icon.yellow { background: var(--warning-light); color: var(--warning); }
+.stat-icon.red { background: var(--danger-light); color: var(--danger); }
+.stat-icon.purple { background: #EDE9FE; color: #7C3AED; }
+.stat-info { flex: 1; }
+.stat-value { font-size: 1.6rem; font-weight: 700; color: var(--gray-900); }
+.stat-label { font-size: 0.8rem; color: var(--gray-500); margin-top: 2px; }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title { font-size: 0.95rem; font-weight: 600; color: var(--gray-800); }
+.card-body { padding: 16px 20px; }
+
+/* ========== Tables ========== */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  background: var(--gray-50);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--gray-200);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.88rem;
+  color: var(--gray-700);
+  vertical-align: middle;
+}
+tbody tr:hover { background: var(--gray-50); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ========== Badges ========== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.badge.blue { background: var(--info-light); color: var(--info); }
+.badge.green { background: var(--success-light); color: #047857; }
+.badge.yellow { background: var(--warning-light); color: #B45309; }
+.badge.red { background: var(--danger-light); color: var(--danger); }
+.badge.gray { background: var(--gray-100); color: var(--gray-500); }
+.badge.purple { background: #EDE9FE; color: #7C3AED; }
+
+/* ========== Buttons ========== */
+.btn {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition);
+  font-family: inherit;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn.primary { background: var(--primary); color: white; }
+.btn.primary:hover { background: var(--primary-dark); }
+.btn.success { background: var(--success); color: white; }
+.btn.success:hover { background: #059669; }
+.btn.warning { background: var(--warning); color: white; }
+.btn.warning:hover { background: #D97706; }
+.btn.danger { background: var(--danger); color: white; }
+.btn.danger:hover { background: #DC2626; }
+.btn.outline {
+  background: transparent;
+  border: 1px solid var(--gray-300);
+  color: var(--gray-600);
+}
+.btn.outline:hover { background: var(--gray-50); }
+.btn.sm { padding: 4px 10px; font-size: 0.78rem; }
+.btn.icon { padding: 6px; width: 30px; height: 30px; justify-content: center; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ========== Forms ========== */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  margin-bottom: 6px;
+}
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  color: var(--gray-800);
+  background: var(--white);
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,108,247,0.1);
+}
+textarea.form-control { resize: vertical; min-height: 80px; }
+select.form-control { cursor: pointer; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.form-help { font-size: 0.78rem; color: var(--gray-400); margin-top: 4px; }
+
+/* ========== Modal ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+.modal {
+  background: var(--white);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(20px);
+  transition: transform 0.3s;
+}
+.modal-overlay.active .modal { transform: translateY(0); }
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title { font-size: 1.05rem; font-weight: 600; }
+.modal-close {
+  width: 32px; height: 32px;
+  border: none;
+  background: var(--gray-100);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--gray-500);
+  transition: all var(--transition);
+}
+.modal-close:hover { background: var(--gray-200); }
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ========== Timeline / Flow ========== */
+.flow-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.flow-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--transition);
+  background: var(--gray-100);
+  color: var(--gray-500);
+}
+.flow-step.active { background: var(--primary); color: white; }
+.flow-step.done { background: var(--success-light); color: #047857; }
+.flow-arrow {
+  font-size: 1.1rem;
+  color: var(--gray-300);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* ========== Progress Bar ========== */
+.progress-bar {
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+}
+.progress-fill.green { background: linear-gradient(90deg, var(--success), #34D399); }
+.progress-fill.yellow { background: linear-gradient(90deg, var(--warning), #FBBF24); }
+.progress-fill.red { background: linear-gradient(90deg, var(--danger), #F87171); }
+
+/* ========== Tabs ========== */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--gray-100); margin-bottom: 20px; }
+.tab {
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  color: var(--gray-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--transition);
+  font-weight: 500;
+}
+.tab:hover { color: var(--gray-700); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* ========== Filter Bar ========== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.search-input {
+  padding: 7px 12px 7px 34px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 240px;
+  background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 10px center no-repeat;
+  font-family: inherit;
+  transition: border-color var(--transition);
+}
+.search-input:focus { outline: none; border-color: var(--primary); }
+.filter-select {
+  padding: 7px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--white);
+  color: var(--gray-700);
+}
+
+/* ========== Empty State ========== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gray-400);
+}
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state .empty-text { font-size: 0.95rem; margin-bottom: 16px; }
+
+/* ========== Priority Dot ========== */
+.priority-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+.priority-dot.high { background: var(--danger); }
+.priority-dot.medium { background: var(--warning); }
+.priority-dot.low { background: var(--success); }
+
+/* ========== Tooltip ========== */
+.action-group { display: flex; gap: 4px; }
+
+/* ========== Toast ========== */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.88rem;
+  box-shadow: var(--shadow-md);
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+  min-width: 200px;
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.info { background: var(--info); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* ========== Activity List ========== */
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.activity-content { flex: 1; }
+.activity-text { font-size: 0.85rem; color: var(--gray-700); }
+.activity-time { font-size: 0.75rem; color: var(--gray-400); margin-top: 2px; }
+
+/* ========== Project Card (Kanban-style) ========== */
+.project-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.project-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  cursor: pointer;
+  transition: all var(--transition);
+  border-left: 4px solid var(--primary);
+}
+.project-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.project-card.status-planning { border-left-color: var(--info); }
+.project-card.status-executing { border-left-color: var(--primary); }
+.project-card.status-closing { border-left-color: var(--warning); }
+.project-card.status-closed { border-left-color: var(--success); }
+.project-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+.project-card-title { font-size: 0.95rem; font-weight: 600; color: var(--gray-900); }
+.project-card-desc { font-size: 0.82rem; color: var(--gray-500); margin-bottom: 14px; line-height: 1.5; }
+.project-card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--gray-400); }
+.project-card-progress { margin: 12px 0; }
+.project-card-members { display: flex; gap: -4px; }
+.member-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 2px solid white;
+  margin-left: -6px;
+}
+.member-avatar:first-child { margin-left: 0; }
+
+/* ========== Detail Page ========== */
+.detail-header {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.detail-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.detail-section {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+/* ========== Milestone ========== */
+.milestone-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.milestone-item:last-child { border-bottom: none; }
+.milestone-check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--gray-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  flex-shrink: 0;
+  background: white;
+}
+.milestone-check.done {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+.milestone-info { flex: 1; }
+.milestone-name { font-size: 0.9rem; font-weight: 500; color: var(--gray-800); }
+.milestone-date { font-size: 0.78rem; color: var(--gray-400); }
+
+/* ========== Finance Summary Cards ========== */
+.finance-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.finance-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  text-align: center;
+}
+.finance-card .amount { font-size: 1.5rem; font-weight: 700; }
+.finance-card .amount.income { color: var(--success); }
+.finance-card .amount.expense { color: var(--danger); }
+.finance-card .amount.pending { color: var(--warning); }
+.finance-card .label { font-size: 0.8rem; color: var(--gray-500); margin-top: 4px; }
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .finance-summary { grid-template-columns: repeat(2, 1fr); }
+  .form-row, .form-row-3 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ========== Animations (respects prefers-reduced-motion) ========== */
+@media (prefers-reduced-motion: no-preference) {
+  .stat-card, .project-card { transition: all 0.3s ease; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">P</div>
+      项目管理系统
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">概览</div>
+        <div class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
+          <span class="nav-icon">&#x1F4CA;</span> 工作台
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">项目管理</div>
+        <div class="nav-item" data-page="customer-follow" onclick="navigateTo('customer-follow')">
+          <span class="nav-icon">&#x1F465;</span> 客户跟进
+        </div>
+        <div class="nav-item" data-page="project-initiation" onclick="navigateTo('project-initiation')">
+          <span class="nav-icon">&#x1F3AF;</span> 项目立项
+        </div>
+        <div class="nav-item" data-page="contract" onclick="navigateTo('contract')">
+          <span class="nav-icon">&#x1F4DD;</span> 项目合同
+          <span class="nav-badge" id="contractBadge">0</span>
+        </div>
+        <div class="nav-item" data-page="milestone" onclick="navigateTo('milestone')">
+          <span class="nav-icon">&#x1F3C1;</span> 里程碑计划
+        </div>
+        <div class="nav-item" data-page="task" onclick="navigateTo('task')">
+          <span class="nav-icon">&#x2705;</span> 任务管理
+          <span class="nav-badge" id="taskBadge">0</span>
+        </div>
+        <div class="nav-item" data-page="progress" onclick="navigateTo('progress')">
+          <span class="nav-icon">&#x1F4C8;</span> 进度跟踪
+        </div>
+        <div class="nav-item" data-page="acceptance" onclick="navigateTo('acceptance')">
+          <span class="nav-icon">&#x2705;</span> 项目验收
+        </div>
+        <div class="nav-item" data-page="review" onclick="navigateTo('review')">
+          <span class="nav-icon">&#x1F4DA;</span> 项目复盘
+        </div>
+        <div class="nav-item" data-page="project-close" onclick="navigateTo('project-close')">
+          <span class="nav-icon">&#x1F3C1;</span> 项目结项
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">财务管理</div>
+        <div class="nav-item" data-page="payment" onclick="navigateTo('payment')">
+          <span class="nav-icon">&#x1F4B3;</span> 付款申请
+          <span class="nav-badge" id="paymentBadge">0</span>
+        </div>
+        <div class="nav-item" data-page="receiving" onclick="navigateTo('receiving')">
+          <span class="nav-icon">&#x1F4B0;</span> 回款登记
+        </div>
+        <div class="nav-item" data-page="invoice" onclick="navigateTo('invoice')">
+          <span class="nav-icon">&#x1F4CB;</span> 开票申请
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="breadcrumb">首页 / <span id="breadcrumbCurrent">工作台</span></div>
+      </div>
+      <div class="header-right">
+        <button class="header-btn outline" onclick="exportData()">&#x1F4E5; 导出</button>
+        <button class="header-btn primary" id="headerAction" onclick="handleHeaderAction()">&#x2795; 新建项目</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- ========== Dashboard ========== -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">&#x1F4C1;</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statTotal">0</div>
+              <div class="stat-label">项目总数</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">&#x1F7E2;</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statExecuting">0</div>
+              <div class="stat-label">执行中</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon yellow">&#x26A0;</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statPending">0</div>
+              <div class="stat-label">待处理任务</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">&#x1F4B0;</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statRevenue">&#xA5;0</div>
+              <div class="stat-label">总合同额</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">&#x1F4CA;</div>
+            <div class="stat-info">
+              <div class="stat-value" id="statReceived">&#xA5;0</div>
+              <div class="stat-label">已回款</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">项目列表</div>
+              <div style="display:flex;gap:8px;">
+                <select class="filter-select" id="dashFilter" onchange="renderDashboard()">
+                  <option value="all">全部状态</option>
+                  <option value="follow">跟进中</option>
+                  <option value="planning">计划中</option>
+                  <option value="executing">执行中</option>
+                  <option value="closing">收尾中</option>
+                  <option value="closed">已结项</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>项目名称</th>
+                      <th>客户</th>
+                      <th>状态</th>
+                      <th>进度</th>
+                      <th>合同额</th>
+                      <th>负责人</th>
+                      <th>截止日期</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashProjectList"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="dashEmpty" style="display:none;">
+                <div class="empty-icon">&#x1F4C1;</div>
+                <div class="empty-text">暂无项目数据</div>
+                <button class="btn primary" onclick="navigateTo('customer-follow')">创建第一个项目</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header"><div class="card-title">最近动态</div></div>
+              <div class="card-body" id="recentActivity"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">待办事项</div></div>
+              <div class="card-body" id="todoList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Customer Follow ========== -->
+      <div class="page" id="page-customer-follow">
+        <div class="flow-steps">
+          <div class="flow-step active">&#x1F465; 客户跟进</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x1F3AF; 项目立项</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x1F3C1; 里程碑</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x2705; 执行监督</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x1F3C1; 收尾</div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="search-input" placeholder="搜索客户或项目..." id="customerSearch" oninput="renderCustomerFollow()">
+          <select class="filter-select" id="customerFilter" onchange="renderCustomerFollow()">
+            <option value="all">全部</option>
+            <option value="following">跟进中</option>
+            <option value="converted">已转化</option>
+            <option value="lost">已流失</option>
+          </select>
+          <button class="btn primary" onclick="openModal('customerModal')">+ 新增跟进</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>客户名称</th><th>联系人</th><th>联系方式</th><th>项目意向</th><th>跟进状态</th><th>最近跟进</th><th>操作</th></tr>
+                </thead>
+                <tbody id="customerList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Project Initiation ========== -->
+      <div class="page" id="page-project-initiation">
+        <div class="flow-steps">
+          <div class="flow-step done">&#x2713; 客户跟进</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step active">&#x1F3AF; 项目立项</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x1F3C1; 里程碑</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x2705; 执行监督</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x1F3C1; 收尾</div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="search-input" placeholder="搜索项目..." id="projectSearch" oninput="renderProjects()">
+          <select class="filter-select" id="projectFilter" onchange="renderProjects()">
+            <option value="all">全部状态</option>
+            <option value="planning">计划中</option>
+            <option value="executing">执行中</option>
+            <option value="closing">收尾中</option>
+            <option value="closed">已结项</option>
+          </select>
+          <button class="btn primary" onclick="openModal('projectModal')">+ 新建立项</button>
+        </div>
+        <div class="project-cards" id="projectCards"></div>
+        <div class="empty-state" id="projectEmpty" style="display:none;">
+          <div class="empty-icon">&#x1F4C1;</div>
+          <div class="empty-text">暂无项目，请新建立项</div>
+        </div>
+      </div>
+
+      <!-- ========== Contract ========== -->
+      <div class="page" id="page-contract">
+        <div class="filter-bar">
+          <input type="text" class="search-input" placeholder="搜索合同..." id="contractSearch" oninput="renderContracts()">
+          <select class="filter-select" id="contractFilter" onchange="renderContracts()">
+            <option value="all">全部</option>
+            <option value="draft">草稿</option>
+            <option value="signing">签署中</option>
+            <option value="signed">已签署</option>
+            <option value="expired">已到期</option>
+          </select>
+          <button class="btn primary" onclick="openModal('contractModal')">+ 新建合同</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>合同编号</th><th>合同名称</th><th>关联项目</th><th>合同金额</th><th>状态</th><th>签署日期</th><th>操作</th></tr>
+                </thead>
+                <tbody id="contractList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Milestone ========== -->
+      <div class="page" id="page-milestone">
+        <div class="flow-steps">
+          <div class="flow-step done">&#x2713; 客户跟进</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 项目立项</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step active">&#x1F3C1; 里程碑</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x2705; 执行监督</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x1F3C1; 收尾</div>
+        </div>
+        <div class="filter-bar">
+          <select class="filter-select" id="milestoneProjectFilter" onchange="renderMilestones()">
+            <option value="all">全部项目</option>
+          </select>
+          <button class="btn primary" onclick="openModal('milestoneModal')">+ 添加里程碑</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="milestoneList"></div>
+        </div>
+      </div>
+
+      <!-- ========== Task ========== -->
+      <div class="page" id="page-task">
+        <div class="flow-steps">
+          <div class="flow-step done">&#x2713; 客户跟进</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 项目立项</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 里程碑</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step active">&#x2705; 任务管理</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x1F3C1; 收尾</div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="search-input" placeholder="搜索任务..." id="taskSearch" oninput="renderTasks()">
+          <select class="filter-select" id="taskProjectFilter" onchange="renderTasks()">
+            <option value="all">全部项目</option>
+          </select>
+          <select class="filter-select" id="taskStatusFilter" onchange="renderTasks()">
+            <option value="all">全部状态</option>
+            <option value="todo">待办</option>
+            <option value="in_progress">进行中</option>
+            <option value="done">已完成</option>
+            <option value="blocked">已阻塞</option>
+          </select>
+          <button class="btn primary" onclick="openModal('taskModal')">+ 新建任务</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>任务名称</th><th>所属项目</th><th>优先级</th><th>负责人</th><th>状态</th><th>截止日期</th><th>进度</th><th>操作</th></tr>
+                </thead>
+                <tbody id="taskList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Progress ========== -->
+      <div class="page" id="page-progress">
+        <div class="flow-steps">
+          <div class="flow-step done">&#x2713; 客户跟进</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 项目立项</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 里程碑</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step active">&#x1F4C8; 进度跟踪</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step">&#x1F3C1; 收尾</div>
+        </div>
+        <div class="filter-bar">
+          <select class="filter-select" id="progressProjectFilter" onchange="renderProgress()">
+            <option value="all">全部项目</option>
+          </select>
+        </div>
+        <div id="progressContent"></div>
+      </div>
+
+      <!-- ========== Acceptance ========== -->
+      <div class="page" id="page-acceptance">
+        <div class="flow-steps">
+          <div class="flow-step done">&#x2713; 客户跟进</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 项目立项</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 里程碑</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 执行监督</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step active">&#x2705; 项目验收</div>
+        </div>
+        <div class="filter-bar">
+          <button class="btn primary" onclick="openModal('acceptanceModal')">+ 新建验收</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>验收项目</th><th>验收内容</th><th>验收人</th><th>状态</th><th>验收日期</th><th>操作</th></tr>
+                </thead>
+                <tbody id="acceptanceList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Review ========== -->
+      <div class="page" id="page-review">
+        <div class="flow-steps">
+          <div class="flow-step done">&#x2713; 客户跟进</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 项目立项</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 里程碑</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 执行监督</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step active">&#x1F4DA; 项目复盘</div>
+        </div>
+        <div class="filter-bar">
+          <button class="btn primary" onclick="openModal('reviewModal')">+ 新建复盘</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="reviewList"></div>
+        </div>
+      </div>
+
+      <!-- ========== Project Close ========== -->
+      <div class="page" id="page-project-close">
+        <div class="flow-steps">
+          <div class="flow-step done">&#x2713; 客户跟进</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 项目立项</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 里程碑</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step done">&#x2713; 执行监督</div>
+          <div class="flow-arrow">&#x2192;</div>
+          <div class="flow-step active">&#x1F3C1; 项目结项</div>
+        </div>
+        <div class="filter-bar">
+          <select class="filter-select" id="closeFilter" onchange="renderProjectClose()">
+            <option value="closing">收尾中</option>
+            <option value="closed">已结项</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>项目名称</th><th>客户</th><th>合同额</th><th>已回款</th><th>完成进度</th><th>状态</th><th>操作</th></tr>
+                </thead>
+                <tbody id="closeList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Payment ========== -->
+      <div class="page" id="page-payment">
+        <div class="filter-bar">
+          <input type="text" class="search-input" placeholder="搜索付款..." id="paymentSearch" oninput="renderPayments()">
+          <select class="filter-select" id="paymentFilter" onchange="renderPayments()">
+            <option value="all">全部</option>
+            <option value="pending">待审批</option>
+            <option value="approved">已审批</option>
+            <option value="paid">已付款</option>
+            <option value="rejected">已驳回</option>
+          </select>
+          <button class="btn primary" onclick="openModal('paymentModal')">+ 付款申请</button>
+        </div>
+        <div class="finance-summary" id="paymentSummary"></div>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>申请编号</th><th>项目</th><th>付款事由</th><th>金额</th><th>收款方</th><th>状态</th><th>申请日期</th><th>操作</th></tr>
+                </thead>
+                <tbody id="paymentList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Receiving ========== -->
+      <div class="page" id="page-receiving">
+        <div class="filter-bar">
+          <input type="text" class="search-input" placeholder="搜索回款..." id="receivingSearch" oninput="renderReceivings()">
+          <select class="filter-select" id="receivingFilter" onchange="renderReceivings()">
+            <option value="all">全部</option>
+            <option value="confirmed">已确认</option>
+            <option value="pending">待确认</option>
+          </select>
+          <button class="btn primary" onclick="openModal('receivingModal')">+ 回款登记</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>登记编号</th><th>项目</th><th>回款金额</th><th>付款方</th><th>状态</th><th>到账日期</th><th>操作</th></tr>
+                </thead>
+                <tbody id="receivingList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== Invoice ========== -->
+      <div class="page" id="page-invoice">
+        <div class="filter-bar">
+          <input type="text" class="search-input" placeholder="搜索发票..." id="invoiceSearch" oninput="renderInvoices()">
+          <select class="filter-select" id="invoiceFilter" onchange="renderInvoices()">
+            <option value="all">全部</option>
+            <option value="pending">待开票</option>
+            <option value="invoiced">已开票</option>
+            <option value="cancelled">已作废</option>
+          </select>
+          <button class="btn primary" onclick="openModal('invoiceModal')">+ 开票申请</button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>发票编号</th><th>项目</th><th>开票金额</th><th>发票类型</th><th>购方名称</th><th>状态</th><th>申请日期</th><th>操作</th></tr>
+                </thead>
+                <tbody id="invoiceList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Modals ========== -->
+
+<!-- Customer Modal -->
+<div class="modal-overlay" id="customerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="customerModalTitle">新增客户跟进</div>
+      <button class="modal-close" onclick="closeModal('customerModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="customerId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">客户名称 *</label>
+          <input type="text" class="form-control" id="customerName" placeholder="请输入客户名称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">联系人 *</label>
+          <input type="text" class="form-control" id="customerContact" placeholder="请输入联系人">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">联系方式</label>
+          <input type="text" class="form-control" id="customerPhone" placeholder="电话/邮箱">
+        </div>
+        <div class="form-group">
+          <label class="form-label">跟进状态</label>
+          <select class="form-control" id="customerStatus">
+            <option value="following">跟进中</option>
+            <option value="converted">已转化</option>
+            <option value="lost">已流失</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">项目意向</label>
+        <input type="text" class="form-control" id="customerIntention" placeholder="客户的项目需求描述">
+      </div>
+      <div class="form-group">
+        <label class="form-label">跟进记录</label>
+        <textarea class="form-control" id="customerNotes" placeholder="沟通内容、需求细节等"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('customerModal')">取消</button>
+      <button class="btn primary" onclick="saveCustomer()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project Modal -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="projectModalTitle">新建立项</div>
+      <button class="modal-close" onclick="closeModal('projectModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="projectId">
+      <div class="form-group">
+        <label class="form-label">项目名称 *</label>
+        <input type="text" class="form-control" id="projectName" placeholder="请输入项目名称">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">客户名称 *</label>
+          <input type="text" class="form-control" id="projectClient" placeholder="关联客户">
+        </div>
+        <div class="form-group">
+          <label class="form-label">项目负责人 *</label>
+          <input type="text" class="form-control" id="projectManager" placeholder="项目负责人">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">项目状态</label>
+          <select class="form-control" id="projectStatus">
+            <option value="planning">计划中</option>
+            <option value="executing">执行中</option>
+            <option value="closing">收尾中</option>
+            <option value="closed">已结项</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">计划截止日期</label>
+          <input type="date" class="form-control" id="projectDeadline">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">合同金额 (元)</label>
+          <input type="number" class="form-control" id="projectBudget" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">团队成员</label>
+          <input type="text" class="form-control" id="projectMembers" placeholder="多人用逗号分隔">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">项目描述</label>
+        <textarea class="form-control" id="projectDescription" placeholder="项目背景、目标、范围等"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('projectModal')">取消</button>
+      <button class="btn primary" onclick="saveProject()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contract Modal -->
+<div class="modal-overlay" id="contractModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="contractModalTitle">新建合同</div>
+      <button class="modal-close" onclick="closeModal('contractModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="contractId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">合同编号 *</label>
+          <input type="text" class="form-control" id="contractNo" placeholder="自动生成或手动输入">
+        </div>
+        <div class="form-group">
+          <label class="form-label">合同名称 *</label>
+          <input type="text" class="form-control" id="contractName" placeholder="合同名称">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">关联项目 *</label>
+          <select class="form-control" id="contractProject"><option value="">请选择项目</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">合同金额 (元)</label>
+          <input type="number" class="form-control" id="contractAmount" placeholder="0.00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">签署日期</label>
+          <input type="date" class="form-control" id="contractSignDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">合同状态</label>
+          <select class="form-control" id="contractStatus">
+            <option value="draft">草稿</option>
+            <option value="signing">签署中</option>
+            <option value="signed">已签署</option>
+            <option value="expired">已到期</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-control" id="contractNotes" placeholder="合同条款摘要等"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('contractModal')">取消</button>
+      <button class="btn primary" onclick="saveContract()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Milestone Modal -->
+<div class="modal-overlay" id="milestoneModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="milestoneModalTitle">添加里程碑</div>
+      <button class="modal-close" onclick="closeModal('milestoneModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="milestoneId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">所属项目 *</label>
+          <select class="form-control" id="milestoneProject"><option value="">请选择项目</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">里程碑名称 *</label>
+          <input type="text" class="form-control" id="milestoneName" placeholder="如: 需求确认、开发完成">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">计划日期</label>
+          <input type="date" class="form-control" id="milestoneDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">状态</label>
+          <select class="form-control" id="milestoneStatus">
+            <option value="pending">待开始</option>
+            <option value="in_progress">进行中</option>
+            <option value="done">已完成</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">交付物</label>
+        <textarea class="form-control" id="milestoneDeliverables" placeholder="本里程碑需交付的成果"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('milestoneModal')">取消</button>
+      <button class="btn primary" onclick="saveMilestone()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="taskModalTitle">新建任务</div>
+      <button class="modal-close" onclick="closeModal('taskModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="taskId">
+      <div class="form-group">
+        <label class="form-label">任务名称 *</label>
+        <input type="text" class="form-control" id="taskName" placeholder="请输入任务名称">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">所属项目 *</label>
+          <select class="form-control" id="taskProject"><option value="">请选择项目</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">关联里程碑</label>
+          <select class="form-control" id="taskMilestone"><option value="">无</option></select>
+        </div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">优先级</label>
+          <select class="form-control" id="taskPriority">
+            <option value="high">高</option>
+            <option value="medium">中</option>
+            <option value="low">低</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">负责人</label>
+          <input type="text" class="form-control" id="taskAssignee" placeholder="负责人">
+        </div>
+        <div class="form-group">
+          <label class="form-label">截止日期</label>
+          <input type="date" class="form-control" id="taskDeadline">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">状态</label>
+          <select class="form-control" id="taskStatus">
+            <option value="todo">待办</option>
+            <option value="in_progress">进行中</option>
+            <option value="done">已完成</option>
+            <option value="blocked">已阻塞</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">进度 (%)</label>
+          <input type="number" class="form-control" id="taskProgress" min="0" max="100" value="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">任务描述</label>
+        <textarea class="form-control" id="taskDescription" placeholder="任务详情、验收标准等"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('taskModal')">取消</button>
+      <button class="btn primary" onclick="saveTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Acceptance Modal -->
+<div class="modal-overlay" id="acceptanceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">新建验收</div>
+      <button class="modal-close" onclick="closeModal('acceptanceModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="acceptanceId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">验收项目 *</label>
+          <select class="form-control" id="acceptanceProject"><option value="">请选择项目</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">验收人</label>
+          <input type="text" class="form-control" id="acceptancePerson" placeholder="验收负责人">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-label">验收内容 *</div>
+        <textarea class="form-control" id="acceptanceContent" placeholder="验收标准及内容"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">验收日期</label>
+          <input type="date" class="form-control" id="acceptanceDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">验收结果</label>
+          <select class="form-control" id="acceptanceResult">
+            <option value="pending">待验收</option>
+            <option value="passed">验收通过</option>
+            <option value="failed">验收未通过</option>
+            <option value="conditional">有条件通过</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">验收意见</label>
+        <textarea class="form-control" id="acceptanceNotes" placeholder="验收备注"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('acceptanceModal')">取消</button>
+      <button class="btn primary" onclick="saveAcceptance()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">新建复盘</div>
+      <button class="modal-close" onclick="closeModal('reviewModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="reviewId">
+      <div class="form-group">
+        <label class="form-label">复盘项目 *</label>
+        <select class="form-control" id="reviewProject"><option value="">请选择项目</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">做得好的</label>
+          <textarea class="form-control" id="reviewGood" placeholder="项目中做得好的方面"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">需要改进的</label>
+          <textarea class="form-control" id="reviewImprove" placeholder="需要改进的方面"></textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">经验教训</label>
+        <textarea class="form-control" id="reviewLessons" placeholder="关键经验教训"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">下一步行动</label>
+        <textarea class="form-control" id="reviewActions" placeholder="后续改进措施"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('reviewModal')">取消</button>
+      <button class="btn primary" onclick="saveReview()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="paymentModalTitle">付款申请</div>
+      <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="paymentId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">关联项目 *</label>
+          <select class="form-control" id="paymentProject"><option value="">请选择项目</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">付款金额 (元) *</label>
+          <input type="number" class="form-control" id="paymentAmount" placeholder="0.00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">收款方 *</label>
+          <input type="text" class="form-control" id="paymentPayee" placeholder="供应商/合作方名称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">付款日期</label>
+          <input type="date" class="form-control" id="paymentDate">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">付款事由 *</label>
+        <textarea class="form-control" id="paymentReason" placeholder="请说明付款原因"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('paymentModal')">取消</button>
+      <button class="btn primary" onclick="savePayment()">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- Receiving Modal -->
+<div class="modal-overlay" id="receivingModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">回款登记</div>
+      <button class="modal-close" onclick="closeModal('receivingModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="receivingId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">关联项目 *</label>
+          <select class="form-control" id="receivingProject"><option value="">请选择项目</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">回款金额 (元) *</label>
+          <input type="number" class="form-control" id="receivingAmount" placeholder="0.00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">付款方</label>
+          <input type="text" class="form-control" id="receivingPayer" placeholder="付款方名称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">到账日期</label>
+          <input type="date" class="form-control" id="receivingDate">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-control" id="receivingNotes" placeholder="回款备注"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('receivingModal')">取消</button>
+      <button class="btn primary" onclick="saveReceiving()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invoice Modal -->
+<div class="modal-overlay" id="invoiceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">开票申请</div>
+      <button class="modal-close" onclick="closeModal('invoiceModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="invoiceId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">关联项目 *</label>
+          <select class="form-control" id="invoiceProject"><option value="">请选择项目</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">开票金额 (元) *</label>
+          <input type="number" class="form-control" id="invoiceAmount" placeholder="0.00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">发票类型</label>
+          <select class="form-control" id="invoiceType">
+            <option value="vat_special">增值税专用发票</option>
+            <option value="vat_normal">增值税普通发票</option>
+            <option value="electronic">电子发票</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">购方名称</label>
+          <input type="text" class="form-control" id="invoiceBuyer" placeholder="购方公司全称">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-control" id="invoiceNotes" placeholder="开票备注"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('invoiceModal')">取消</button>
+      <button class="btn primary" onclick="saveInvoice()">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">确认操作</div>
+      <button class="modal-close" onclick="closeModal('confirmModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMessage" style="color:var(--gray-700);"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('confirmModal')">取消</button>
+      <button class="btn danger" id="confirmBtn" onclick="">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ========== Data Store ==========
+const DB_KEY = 'pm_system_data';
+let data = loadData();
+
+function getDefaultData() {
+  return {
+    customers: [],
+    projects: [],
+    contracts: [],
+    milestones: [],
+    tasks: [],
+    acceptances: [],
+    reviews: [],
+    payments: [],
+    receivings: [],
+    invoices: [],
+    activities: []
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return getDefaultData();
+}
+
+function saveData() {
+  localStorage.setItem(DB_KEY, JSON.stringify(data));
+}
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+function today() { return new Date().toISOString().slice(0, 10); }
+function money(n) { return '¥' + Number(n||0).toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+
+// ========== Toast ==========
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ========== Modal ==========
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  populateProjectSelects();
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function confirmAction(msg, callback) {
+  document.getElementById('confirmMessage').textContent = msg;
+  document.getElementById('confirmBtn').onclick = () => { callback(); closeModal('confirmModal'); };
+  openModal('confirmModal');
+}
+
+// ========== Populate Project Selects ==========
+function populateProjectSelects() {
+  const selects = ['contractProject','milestoneProject','taskProject','acceptanceProject','reviewProject','paymentProject','receivingProject','invoiceProject','milestoneProjectFilter','taskProjectFilter','progressProjectFilter'];
+  selects.forEach(sid => {
+    const sel = document.getElementById(sid);
+    if (!sel) return;
+    const current = sel.value;
+    const isFilter = sid.includes('Filter');
+    sel.innerHTML = isFilter ? '<option value="all">全部项目</option>' : '<option value="">请选择项目</option>';
+    data.projects.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      sel.appendChild(opt);
+    });
+    sel.value = current;
+  });
+  // Task milestone select
+  const ms = document.getElementById('taskMilestone');
+  if (ms) {
+    const projId = document.getElementById('taskProject')?.value;
+    ms.innerHTML = '<option value="">无</option>';
+    data.milestones.filter(m => !projId || m.projectId === projId).forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.name;
+      ms.appendChild(opt);
+    });
+  }
+}
+
+// ========== Navigation ==========
+let currentPage = 'dashboard';
+const pageNames = {
+  'dashboard': '工作台',
+  'customer-follow': '客户跟进',
+  'project-initiation': '项目立项',
+  'contract': '项目合同',
+  'milestone': '里程碑计划',
+  'task': '任务管理',
+  'progress': '进度跟踪',
+  'acceptance': '项目验收',
+  'review': '项目复盘',
+  'project-close': '项目结项',
+  'payment': '付款申请',
+  'receiving': '回款登记',
+  'invoice': '开票申请'
+};
+
+function navigateTo(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+  document.getElementById('breadcrumbCurrent').textContent = pageNames[page] || page;
+
+  // Update header action button
+  const ha = document.getElementById('headerAction');
+  const actionMap = {
+    'customer-follow': ['&#x2795; 新增跟进', "openModal('customerModal')"],
+    'project-initiation': ['&#x2795; 新建立项', "openModal('projectModal')"],
+    'contract': ['&#x2795; 新建合同', "openModal('contractModal')"],
+    'milestone': ['&#x2795; 添加里程碑', "openModal('milestoneModal')"],
+    'task': ['&#x2795; 新建任务', "openModal('taskModal')"],
+    'acceptance': ['&#x2795; 新建验收', "openModal('acceptanceModal')"],
+    'review': ['&#x2795; 新建复盘', "openModal('reviewModal')"],
+    'payment': ['&#x2795; 付款申请', "openModal('paymentModal')"],
+    'receiving': ['&#x2795; 回款登记', "openModal('receivingModal')"],
+    'invoice': ['&#x2795; 开票申请', "openModal('invoiceModal')"],
+  };
+  if (actionMap[page]) {
+    ha.innerHTML = actionMap[page][0];
+    ha.setAttribute('onclick', actionMap[page][1]);
+  } else {
+    ha.innerHTML = '&#x2795; 新建项目';
+    ha.setAttribute('onclick', "openModal('projectModal')");
+  }
+
+  renderPage(page);
+}
+
+function handleHeaderAction() {
+  // handled by onclick attribute
+}
+
+function renderPage(page) {
+  switch(page) {
+    case 'dashboard': renderDashboard(); break;
+    case 'customer-follow': renderCustomerFollow(); break;
+    case 'project-initiation': renderProjects(); break;
+    case 'contract': renderContracts(); break;
+    case 'milestone': renderMilestones(); break;
+    case 'task': renderTasks(); break;
+    case 'progress': renderProgress(); break;
+    case 'acceptance': renderAcceptances(); break;
+    case 'review': renderReviews(); break;
+    case 'project-close': renderProjectClose(); break;
+    case 'payment': renderPayments(); break;
+    case 'receiving': renderReceivings(); break;
+    case 'invoice': renderInvoices(); break;
+  }
+}
+
+// ========== Status Badge ==========
+function statusBadge(status) {
+  const map = {
+    'follow': ['跟进中','blue'], 'following': ['跟进中','blue'],
+    'converted': ['已转化','green'], 'lost': ['已流失','gray'],
+    'planning': ['计划中','blue'], 'executing': ['执行中','purple'],
+    'closing': ['收尾中','yellow'], 'closed': ['已结项','green'],
+    'draft': ['草稿','gray'], 'signing': ['签署中','blue'],
+    'signed': ['已签署','green'], 'expired': ['已到期','red'],
+    'pending': ['待处理','yellow'], 'in_progress': ['进行中','blue'],
+    'done': ['已完成','green'], 'blocked': ['已阻塞','red'],
+    'approved': ['已审批','green'], 'paid': ['已付款','green'],
+    'rejected': ['已驳回','red'], 'confirmed': ['已确认','green'],
+    'passed': ['已通过','green'], 'failed': ['未通过','red'],
+    'conditional': ['有条件通过','yellow'], 'invoiced': ['已开票','green'],
+    'cancelled': ['已作废','gray'], 'todo': ['待办','gray']
+  };
+  const [label, cls] = map[status] || [status, 'gray'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function priorityBadge(p) {
+  const map = { high: ['高','red'], medium: ['中','yellow'], low: ['低','green'] };
+  const [label, cls] = map[p] || [p, 'gray'];
+  return `<span class="priority-dot ${cls}"></span><span class="badge ${cls}">${label}</span>`;
+}
+
+// ========== Dashboard ==========
+function renderDashboard() {
+  const filter = document.getElementById('dashFilter')?.value || 'all';
+  let projects = data.projects;
+  if (filter !== 'all') projects = projects.filter(p => p.status === filter);
+
+  // Stats
+  document.getElementById('statTotal').textContent = data.projects.length;
+  document.getElementById('statExecuting').textContent = data.projects.filter(p => p.status === 'executing').length;
+  document.getElementById('statPending').textContent = data.tasks.filter(t => t.status === 'todo' || t.status === 'in_progress').length;
+  const totalBudget = data.contracts.filter(c => c.status === 'signed').reduce((s,c) => s + Number(c.amount||0), 0);
+  document.getElementById('statRevenue').textContent = money(totalBudget);
+  const totalReceived = data.receivings.filter(r => r.status === 'confirmed').reduce((s,r) => s + Number(r.amount||0), 0);
+  document.getElementById('statReceived').textContent = money(totalReceived);
+
+  // Project Table
+  const tbody = document.getElementById('dashProjectList');
+  const empty = document.getElementById('dashEmpty');
+  if (projects.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    tbody.innerHTML = projects.map(p => {
+      const progress = calcProjectProgress(p.id);
+      return `<tr>
+        <td><strong style="cursor:pointer;color:var(--primary)" onclick="viewProject('${p.id}')">${p.name}</strong></td>
+        <td>${p.client || '-'}</td>
+        <td>${statusBadge(p.status)}</td>
+        <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill ${progress>=80?'green':progress>=50?'':'yellow'}" style="width:${progress}%"></div></div><span style="font-size:0.8rem;color:var(--gray-500)">${progress}%</span></div></td>
+        <td>${money(p.budget)}</td>
+        <td>${p.manager || '-'}</td>
+        <td>${p.deadline || '-'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Recent Activity
+  const actDiv = document.getElementById('recentActivity');
+  const recentActs = (data.activities || []).slice(-8).reverse();
+  if (recentActs.length === 0) {
+    actDiv.innerHTML = '<div class="empty-state" style="padding:30px"><div class="empty-icon">&#x1F4ED;</div><div class="empty-text">暂无动态</div></div>';
+  } else {
+    actDiv.innerHTML = recentActs.map(a => `
+      <div class="activity-item">
+        <div class="activity-dot" style="background:${a.color || 'var(--primary)'}"></div>
+        <div class="activity-content">
+          <div class="activity-text">${a.text}</div>
+          <div class="activity-time">${a.time}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Todo list
+  const todoDiv = document.getElementById('todoList');
+  const pendingTasks = data.tasks.filter(t => t.status === 'todo' || t.status === 'in_progress').slice(0, 6);
+  if (pendingTasks.length === 0) {
+    todoDiv.innerHTML = '<div class="empty-state" style="padding:30px"><div class="empty-icon">&#x2705;</div><div class="empty-text">所有任务已完成</div></div>';
+  } else {
+    todoDiv.innerHTML = pendingTasks.map(t => `
+      <div class="activity-item" style="cursor:pointer" onclick="editTask('${t.id}')">
+        <div class="activity-dot" style="background:${t.status==='todo'?'var(--warning)':'var(--primary)'}"></div>
+        <div class="activity-content">
+          <div class="activity-text"><span class="priority-dot ${t.priority}"></span>${t.name}</div>
+          <div class="activity-time">${t.projectName || ''} ${t.assignee ? '· ' + t.assignee : ''} ${t.deadline ? '· 截止 ' + t.deadline : ''}</div>
+        </div>
+        ${statusBadge(t.status)}
+      </div>
+    `).join('');
+  }
+
+  // Badges
+  updateBadges();
+}
+
+function updateBadges() {
+  document.getElementById('contractBadge').textContent = data.contracts.filter(c => c.status === 'signing').length || '';
+  document.getElementById('taskBadge').textContent = data.tasks.filter(t => t.status === 'in_progress').length || '';
+  document.getElementById('paymentBadge').textContent = data.payments.filter(p => p.status === 'pending').length || '';
+}
+
+function calcProjectProgress(projectId) {
+  const tasks = data.tasks.filter(t => t.projectId === projectId);
+  if (tasks.length === 0) return 0;
+  const milestones = data.milestones.filter(m => m.projectId === projectId);
+  let msWeight = milestones.length > 0 ? 0.3 : 0;
+  let msProgress = milestones.length > 0 ? milestones.filter(m => m.status === 'done').length / milestones.length * 100 : 0;
+  let tProgress = tasks.reduce((s, t) => s + Number(t.progress || 0), 0) / tasks.length;
+  return Math.round(msWeight * msProgress + (1 - msWeight) * tProgress);
+}
+
+function addActivity(text, color) {
+  if (!data.activities) data.activities = [];
+  data.activities.push({ text, color: color || 'var(--primary)', time: new Date().toLocaleString('zh-CN') });
+  if (data.activities.length > 100) data.activities = data.activities.slice(-100);
+  saveData();
+}
+
+// ========== Customer Follow ==========
+function renderCustomerFollow() {
+  const search = (document.getElementById('customerSearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('customerFilter')?.value || 'all';
+  let list = data.customers;
+  if (filter !== 'all') list = list.filter(c => c.status === filter);
+  if (search) list = list.filter(c => (c.name+c.contact+c.intention).toLowerCase().includes(search));
+
+  document.getElementById('customerList').innerHTML = list.length === 0 ?
+    '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400)">暂无客户数据</td></tr>' :
+    list.map(c => `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.contact}</td>
+      <td>${c.phone || '-'}</td>
+      <td>${c.intention || '-'}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td>${c.updatedAt || c.createdAt || '-'}</td>
+      <td class="action-group">
+        <button class="btn sm outline" onclick="editCustomer('${c.id}')">编辑</button>
+        ${c.status === 'following' ? `<button class="btn sm primary" onclick="convertCustomer('${c.id}')">转化立项</button>` : ''}
+        <button class="btn sm danger" onclick="deleteCustomer('${c.id}')">删除</button>
+      </td>
+    </tr>`).join('');
+}
+
+function saveCustomer() {
+  const id = document.getElementById('customerId').value;
+  const name = document.getElementById('customerName').value.trim();
+  if (!name) return showToast('请输入客户名称', 'error');
+
+  const obj = {
+    id: id || genId(),
+    name,
+    contact: document.getElementById('customerContact').value.trim(),
+    phone: document.getElementById('customerPhone').value.trim(),
+    status: document.getElementById('customerStatus').value,
+    intention: document.getElementById('customerIntention').value.trim(),
+    notes: document.getElementById('customerNotes').value.trim(),
+    updatedAt: today()
+  };
+
+  if (id) {
+    const idx = data.customers.findIndex(c => c.id === id);
+    if (idx >= 0) data.customers[idx] = { ...data.customers[idx], ...obj };
+    addActivity(`更新客户: ${name}`, 'var(--info)');
+  } else {
+    obj.createdAt = today();
+    data.customers.push(obj);
+    addActivity(`新增客户: ${name}`, 'var(--success)');
+  }
+  saveData();
+  closeModal('customerModal');
+  clearForm('customerModal');
+  renderCustomerFollow();
+  showToast(id ? '客户信息已更新' : '客户已添加', 'success');
+}
+
+function editCustomer(id) {
+  const c = data.customers.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('customerId').value = c.id;
+  document.getElementById('customerName').value = c.name;
+  document.getElementById('customerContact').value = c.contact || '';
+  document.getElementById('customerPhone').value = c.phone || '';
+  document.getElementById('customerStatus').value = c.status || 'following';
+  document.getElementById('customerIntention').value = c.intention || '';
+  document.getElementById('customerNotes').value = c.notes || '';
+  document.getElementById('customerModalTitle').textContent = '编辑客户跟进';
+  openModal('customerModal');
+}
+
+function deleteCustomer(id) {
+  confirmAction('确定要删除该客户吗？', () => {
+    data.customers = data.customers.filter(c => c.id !== id);
+    saveData();
+    renderCustomerFollow();
+    showToast('已删除', 'success');
+  });
+}
+
+function convertCustomer(id) {
+  const c = data.customers.find(x => x.id === id);
+  if (!c) return;
+  c.status = 'converted';
+  saveData();
+  // Navigate to project init with pre-fill
+  navigateTo('project-initiation');
+  setTimeout(() => {
+    document.getElementById('projectClient').value = c.name;
+    document.getElementById('projectName').value = c.intention || '';
+    openModal('projectModal');
+  }, 100);
+  showToast('客户已转化，请完善项目信息', 'success');
+}
+
+// ========== Project Initiation ==========
+function renderProjects() {
+  const search = (document.getElementById('projectSearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('projectFilter')?.value || 'all';
+  let list = data.projects;
+  if (filter !== 'all') list = list.filter(p => p.status === filter);
+  if (search) list = list.filter(p => (p.name+p.client+p.manager).toLowerCase().includes(search));
+
+  document.getElementById('projectEmpty').style.display = list.length === 0 ? 'block' : 'none';
+  document.getElementById('projectCards').innerHTML = list.map(p => {
+    const progress = calcProjectProgress(p.id);
+    const members = (p.members || '').split(',').filter(Boolean).slice(0, 3);
+    return `<div class="project-card status-${p.status}" onclick="viewProject('${p.id}')">
+      <div class="project-card-header">
+        <div>
+          <div class="project-card-title">${p.name}</div>
+          <div style="font-size:0.78rem;color:var(--gray-400);margin-top:2px">${p.client || ''}</div>
+        </div>
+        ${statusBadge(p.status)}
+      </div>
+      <div class="project-card-desc">${p.description || '暂无描述'}</div>
+      <div class="project-card-progress">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.78rem;color:var(--gray-500)">
+          <span>项目进度</span><span>${progress}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill ${progress>=80?'green':progress>=50?'':'yellow'}" style="width:${progress}%"></div></div>
+      </div>
+      <div class="project-card-meta">
+        <div>${p.manager ? '负责人: ' + p.manager : ''}</div>
+        <div class="project-card-members">
+          ${members.map((m,i) => `<div class="member-avatar" style="background:${['var(--primary)','#7C3AED','var(--success)'][i%3]}">${m.charAt(0)}</div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveProject() {
+  const id = document.getElementById('projectId').value;
+  const name = document.getElementById('projectName').value.trim();
+  if (!name) return showToast('请输入项目名称', 'error');
+
+  const obj = {
+    id: id || genId(),
+    name,
+    client: document.getElementById('projectClient').value.trim(),
+    manager: document.getElementById('projectManager').value.trim(),
+    status: document.getElementById('projectStatus').value,
+    deadline: document.getElementById('projectDeadline').value,
+    budget: document.getElementById('projectBudget').value,
+    members: document.getElementById('projectMembers').value.trim(),
+    description: document.getElementById('projectDescription').value.trim(),
+    updatedAt: today()
+  };
+
+  if (id) {
+    const idx = data.projects.findIndex(p => p.id === id);
+    if (idx >= 0) data.projects[idx] = { ...data.projects[idx], ...obj };
+    addActivity(`更新项目: ${name}`, 'var(--info)');
+  } else {
+    obj.createdAt = today();
+    data.projects.push(obj);
+    addActivity(`新建项目: ${name}`, 'var(--success)');
+  }
+  saveData();
+  closeModal('projectModal');
+  clearForm('projectModal');
+  renderProjects();
+  showToast(id ? '项目已更新' : '项目已创建', 'success');
+}
+
+function editProject(id) {
+  const p = data.projects.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('projectId').value = p.id;
+  document.getElementById('projectName').value = p.name;
+  document.getElementById('projectClient').value = p.client || '';
+  document.getElementById('projectManager').value = p.manager || '';
+  document.getElementById('projectStatus').value = p.status || 'planning';
+  document.getElementById('projectDeadline').value = p.deadline || '';
+  document.getElementById('projectBudget').value = p.budget || '';
+  document.getElementById('projectMembers').value = p.members || '';
+  document.getElementById('projectDescription').value = p.description || '';
+  document.getElementById('projectModalTitle').textContent = '编辑项目';
+  openModal('projectModal');
+}
+
+function viewProject(id) {
+  const p = data.projects.find(x => x.id === id);
+  if (!p) return;
+  navigateTo('project-initiation');
+  setTimeout(() => editProject(id), 100);
+}
+
+// ========== Contract ==========
+function renderContracts() {
+  const search = (document.getElementById('contractSearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('contractFilter')?.value || 'all';
+  let list = data.contracts;
+  if (filter !== 'all') list = list.filter(c => c.status === filter);
+  if (search) list = list.filter(c => (c.no+c.name+c.projectName||'').toLowerCase().includes(search));
+
+  document.getElementById('contractList').innerHTML = list.length === 0 ?
+    '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400)">暂无合同</td></tr>' :
+    list.map(c => {
+      const proj = data.projects.find(p => p.id === c.projectId);
+      return `<tr>
+        <td>${c.no}</td>
+        <td><strong>${c.name}</strong></td>
+        <td>${proj?.name || '-'}</td>
+        <td style="font-weight:600">${money(c.amount)}</td>
+        <td>${statusBadge(c.status)}</td>
+        <td>${c.signDate || '-'}</td>
+        <td class="action-group">
+          <button class="btn sm outline" onclick="editContract('${c.id}')">编辑</button>
+          <button class="btn sm danger" onclick="deleteContract('${c.id}')">删除</button>
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function saveContract() {
+  const id = document.getElementById('contractId').value;
+  const name = document.getElementById('contractName').value.trim();
+  if (!name) return showToast('请输入合同名称', 'error');
+
+  const projId = document.getElementById('contractProject').value;
+  const proj = data.projects.find(p => p.id === projId);
+
+  const obj = {
+    id: id || genId(),
+    no: document.getElementById('contractNo').value.trim() || 'CT-' + today().replace(/-/g, '').slice(2),
+    name,
+    projectId: projId,
+    projectName: proj?.name || '',
+    amount: document.getElementById('contractAmount').value,
+    signDate: document.getElementById('contractSignDate').value,
+    status: document.getElementById('contractStatus').value,
+    notes: document.getElementById('contractNotes').value.trim()
+  };
+
+  if (id) {
+    const idx = data.contracts.findIndex(c => c.id === id);
+    if (idx >= 0) data.contracts[idx] = { ...data.contracts[idx], ...obj };
+    addActivity(`更新合同: ${name}`, 'var(--info)');
+  } else {
+    obj.createdAt = today();
+    data.contracts.push(obj);
+    addActivity(`新建合同: ${name}`, 'var(--success)');
+  }
+  saveData();
+  closeModal('contractModal');
+  clearForm('contractModal');
+  renderContracts();
+  showToast('合同已保存', 'success');
+}
+
+function editContract(id) {
+  const c = data.contracts.find(x => x.id === id);
+  if (!c) return;
+  populateProjectSelects();
+  setTimeout(() => {
+    document.getElementById('contractId').value = c.id;
+    document.getElementById('contractNo').value = c.no;
+    document.getElementById('contractName').value = c.name;
+    document.getElementById('contractProject').value = c.projectId || '';
+    document.getElementById('contractAmount').value = c.amount || '';
+    document.getElementById('contractSignDate').value = c.signDate || '';
+    document.getElementById('contractStatus').value = c.status || 'draft';
+    document.getElementById('contractNotes').value = c.notes || '';
+    document.getElementById('contractModalTitle').textContent = '编辑合同';
+    openModal('contractModal');
+  }, 50);
+}
+
+function deleteContract(id) {
+  confirmAction('确定要删除该合同吗？', () => {
+    data.contracts = data.contracts.filter(c => c.id !== id);
+    saveData(); renderContracts(); showToast('已删除', 'success');
+  });
+}
+
+// ========== Milestone ==========
+function renderMilestones() {
+  const projFilter = document.getElementById('milestoneProjectFilter')?.value || 'all';
+  let list = data.milestones;
+  if (projFilter !== 'all') list = list.filter(m => m.projectId === projFilter);
+
+  document.getElementById('milestoneList').innerHTML = list.length === 0 ?
+    '<div class="empty-state" style="padding:40px"><div class="empty-icon">&#x1F3C1;</div><div class="empty-text">暂无里程碑</div></div>' :
+    list.map(m => {
+      const proj = data.projects.find(p => p.id === m.projectId);
+      return `<div class="milestone-item">
+        <div class="milestone-check ${m.status==='done'?'done':''}" onclick="toggleMilestone('${m.id}')">${m.status==='done'?'&#x2713;':''}</div>
+        <div class="milestone-info">
+          <div class="milestone-name">${m.name}</div>
+          <div class="milestone-date">${proj?.name || ''} · ${m.date || '无日期'} ${m.deliverables ? '· ' + m.deliverables : ''}</div>
+        </div>
+        ${statusBadge(m.status)}
+        <div class="action-group">
+          <button class="btn sm outline" onclick="editMilestone('${m.id}')">编辑</button>
+          <button class="btn sm danger" onclick="deleteMilestone('${m.id}')">删除</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function saveMilestone() {
+  const id = document.getElementById('milestoneId').value;
+  const name = document.getElementById('milestoneName').value.trim();
+  if (!name) return showToast('请输入里程碑名称', 'error');
+
+  const projId = document.getElementById('milestoneProject').value;
+  const proj = data.projects.find(p => p.id === projId);
+
+  const obj = {
+    id: id || genId(),
+    projectId: projId,
+    projectName: proj?.name || '',
+    name,
+    date: document.getElementById('milestoneDate').value,
+    status: document.getElementById('milestoneStatus').value,
+    deliverables: document.getElementById('milestoneDeliverables').value.trim()
+  };
+
+  if (id) {
+    const idx = data.milestones.findIndex(m => m.id === id);
+    if (idx >= 0) data.milestones[idx] = { ...data.milestones[idx], ...obj };
+  } else {
+    data.milestones.push(obj);
+    addActivity(`添加里程碑: ${name} (${proj?.name || ''})`, 'var(--success)');
+  }
+  saveData(); closeModal('milestoneModal'); clearForm('milestoneModal');
+  renderMilestones(); showToast('里程碑已保存', 'success');
+}
+
+function editMilestone(id) {
+  const m = data.milestones.find(x => x.id === id);
+  if (!m) return;
+  populateProjectSelects();
+  setTimeout(() => {
+    document.getElementById('milestoneId').value = m.id;
+    document.getElementById('milestoneProject').value = m.projectId || '';
+    document.getElementById('milestoneName').value = m.name;
+    document.getElementById('milestoneDate').value = m.date || '';
+    document.getElementById('milestoneStatus').value = m.status || 'pending';
+    document.getElementById('milestoneDeliverables').value = m.deliverables || '';
+    openModal('milestoneModal');
+  }, 50);
+}
+
+function toggleMilestone(id) {
+  const m = data.milestones.find(x => x.id === id);
+  if (!m) return;
+  m.status = m.status === 'done' ? 'pending' : 'done';
+  saveData(); renderMilestones();
+  addActivity(`${m.status==='done'?'完成':'重新打开'}里程碑: ${m.name}`, m.status==='done'?'var(--success)':'var(--warning)');
+}
+
+function deleteMilestone(id) {
+  confirmAction('确定要删除该里程碑吗？', () => {
+    data.milestones = data.milestones.filter(m => m.id !== id);
+    saveData(); renderMilestones(); showToast('已删除', 'success');
+  });
+}
+
+// ========== Task ==========
+function renderTasks() {
+  const search = (document.getElementById('taskSearch')?.value || '').toLowerCase();
+  const projFilter = document.getElementById('taskProjectFilter')?.value || 'all';
+  const statusFilter = document.getElementById('taskStatusFilter')?.value || 'all';
+  let list = data.tasks;
+  if (projFilter !== 'all') list = list.filter(t => t.projectId === projFilter);
+  if (statusFilter !== 'all') list = list.filter(t => t.status === statusFilter);
+  if (search) list = list.filter(t => (t.name+t.assignee+t.description||'').toLowerCase().includes(search));
+
+  document.getElementById('taskList').innerHTML = list.length === 0 ?
+    '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400)">暂无任务</td></tr>' :
+    list.map(t => {
+      const proj = data.projects.find(p => p.id === t.projectId);
+      return `<tr>
+        <td><strong>${t.name}</strong></td>
+        <td>${proj?.name || '-'}</td>
+        <td>${priorityBadge(t.priority || 'medium')}</td>
+        <td>${t.assignee || '-'}</td>
+        <td>${statusBadge(t.status)}</td>
+        <td>${t.deadline || '-'}</td>
+        <td><div style="display:flex;align-items:center;gap:6px;width:80px;"><div class="progress-bar" style="flex:1"><div class="progress-fill ${Number(t.progress)>=80?'green':''}" style="width:${t.progress||0}%"></div></div><span style="font-size:0.75rem">${t.progress||0}%</span></div></td>
+        <td class="action-group">
+          <button class="btn sm outline" onclick="editTask('${t.id}')">编辑</button>
+          <button class="btn sm danger" onclick="deleteTask('${t.id}')">删除</button>
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function saveTask() {
+  const id = document.getElementById('taskId').value;
+  const name = document.getElementById('taskName').value.trim();
+  if (!name) return showToast('请输入任务名称', 'error');
+
+  const projId = document.getElementById('taskProject').value;
+  const proj = data.projects.find(p => p.id === projId);
+
+  const obj = {
+    id: id || genId(),
+    name,
+    projectId: projId,
+    projectName: proj?.name || '',
+    milestoneId: document.getElementById('taskMilestone').value || '',
+    priority: document.getElementById('taskPriority').value,
+    assignee: document.getElementById('taskAssignee').value.trim(),
+    deadline: document.getElementById('taskDeadline').value,
+    status: document.getElementById('taskStatus').value,
+    progress: document.getElementById('taskProgress').value,
+    description: document.getElementById('taskDescription').value.trim()
+  };
+
+  if (id) {
+    const idx = data.tasks.findIndex(t => t.id === id);
+    if (idx >= 0) data.tasks[idx] = { ...data.tasks[idx], ...obj };
+  } else {
+    obj.createdAt = today();
+    data.tasks.push(obj);
+    addActivity(`新建任务: ${name} (${proj?.name || ''})`, 'var(--success)');
+  }
+  saveData(); closeModal('taskModal'); clearForm('taskModal');
+  renderTasks(); showToast('任务已保存', 'success');
+}
+
+function editTask(id) {
+  const t = data.tasks.find(x => x.id === id);
+  if (!t) return;
+  populateProjectSelects();
+  setTimeout(() => {
+    document.getElementById('taskId').value = t.id;
+    document.getElementById('taskName').value = t.name;
+    document.getElementById('taskProject').value = t.projectId || '';
+    populateProjectSelects();
+    document.getElementById('taskMilestone').value = t.milestoneId || '';
+    document.getElementById('taskPriority').value = t.priority || 'medium';
+    document.getElementById('taskAssignee').value = t.assignee || '';
+    document.getElementById('taskDeadline').value = t.deadline || '';
+    document.getElementById('taskStatus').value = t.status || 'todo';
+    document.getElementById('taskProgress').value = t.progress || 0;
+    document.getElementById('taskDescription').value = t.description || '';
+    document.getElementById('taskModalTitle').textContent = '编辑任务';
+    openModal('taskModal');
+  }, 50);
+}
+
+function deleteTask(id) {
+  confirmAction('确定要删除该任务吗？', () => {
+    data.tasks = data.tasks.filter(t => t.id !== id);
+    saveData(); renderTasks(); showToast('已删除', 'success');
+  });
+}
+
+// ========== Progress ==========
+function renderProgress() {
+  const projFilter = document.getElementById('progressProjectFilter')?.value || 'all';
+  let projects = data.projects;
+  if (projFilter !== 'all') projects = projects.filter(p => p.id === projFilter);
+
+  const container = document.getElementById('progressContent');
+  if (projects.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#x1F4C8;</div><div class="empty-text">暂无项目</div></div>';
+    return;
+  }
+
+  container.innerHTML = projects.map(p => {
+    const progress = calcProjectProgress(p.id);
+    const tasks = data.tasks.filter(t => t.projectId === p.id);
+    const milestones = data.milestones.filter(m => m.projectId === p.id);
+    const doneTasks = tasks.filter(t => t.status === 'done').length;
+    const doneMs = milestones.filter(m => m.status === 'done').length;
+
+    return `<div class="detail-section">
+      <div class="card-header">
+        <div class="card-title">${p.name} <span style="font-size:0.82rem;color:var(--gray-400);font-weight:400;margin-left:8px">${p.client || ''}</span></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:1.1rem;font-weight:700;color:var(--primary)">${progress}%</span>
+          ${statusBadge(p.status)}
+        </div>
+      </div>
+      <div style="padding:16px 20px">
+        <div class="progress-bar" style="margin-bottom:16px"><div class="progress-fill ${progress>=80?'green':progress>=50?'':'yellow'}" style="width:${progress}%"></div></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;font-size:0.85rem">
+          <div><span style="color:var(--gray-400)">里程碑</span><br><strong>${doneMs}/${milestones.length}</strong></div>
+          <div><span style="color:var(--gray-400)">任务</span><br><strong>${doneTasks}/${tasks.length}</strong></div>
+          <div><span style="color:var(--gray-400)">进行中</span><br><strong>${tasks.filter(t=>t.status==='in_progress').length}</strong></div>
+          <div><span style="color:var(--gray-400)">已阻塞</span><br><strong style="color:var(--danger)">${tasks.filter(t=>t.status==='blocked').length}</strong></div>
+        </div>
+        ${milestones.length > 0 ? `
+        <div style="font-size:0.85rem;font-weight:600;margin-bottom:8px;color:var(--gray-700)">里程碑进度</div>
+        ${milestones.map(m => `<div class="milestone-item" style="padding:8px 0">
+          <div class="milestone-check ${m.status==='done'?'done':''}" style="width:20px;height:20px;font-size:0.7rem">${m.status==='done'?'&#x2713;':''}</div>
+          <div class="milestone-info">
+            <div class="milestone-name" style="font-size:0.83rem">${m.name}</div>
+            <div class="milestone-date">${m.date || ''} ${m.deliverables ? '· ' + m.deliverables : ''}</div>
+          </div>
+          ${statusBadge(m.status)}
+        </div>`).join('')}
+        ` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ========== Acceptance ==========
+function renderAcceptances() {
+  document.getElementById('acceptanceList').innerHTML = data.acceptances.length === 0 ?
+    '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--gray-400)">暂无验收记录</td></tr>' :
+    data.acceptances.map(a => {
+      const proj = data.projects.find(p => p.id === a.projectId);
+      return `<tr>
+        <td>${proj?.name || '-'}</td>
+        <td>${a.content ? a.content.substring(0, 50) + (a.content.length > 50 ? '...' : '') : '-'}</td>
+        <td>${a.person || '-'}</td>
+        <td>${statusBadge(a.result)}</td>
+        <td>${a.date || '-'}</td>
+        <td class="action-group">
+          <button class="btn sm outline" onclick="editAcceptance('${a.id}')">编辑</button>
+          <button class="btn sm danger" onclick="deleteAcceptance('${a.id}')">删除</button>
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function saveAcceptance() {
+  const id = document.getElementById('acceptanceId').value;
+  const projectId = document.getElementById('acceptanceProject').value;
+  if (!projectId) return showToast('请选择验收项目', 'error');
+
+  const proj = data.projects.find(p => p.id === projectId);
+  const obj = {
+    id: id || genId(),
+    projectId,
+    projectName: proj?.name || '',
+    content: document.getElementById('acceptanceContent').value.trim(),
+    person: document.getElementById('acceptancePerson').value.trim(),
+    date: document.getElementById('acceptanceDate').value,
+    result: document.getElementById('acceptanceResult').value,
+    notes: document.getElementById('acceptanceNotes').value.trim()
+  };
+
+  if (id) {
+    const idx = data.acceptances.findIndex(a => a.id === id);
+    if (idx >= 0) data.acceptances[idx] = { ...data.acceptances[idx], ...obj };
+  } else {
+    data.acceptances.push(obj);
+    addActivity(`新建验收: ${proj?.name || ''}`, 'var(--success)');
+  }
+  saveData(); closeModal('acceptanceModal'); clearForm('acceptanceModal');
+  renderAcceptances(); showToast('验收记录已保存', 'success');
+}
+
+function editAcceptance(id) {
+  const a = data.acceptances.find(x => x.id === id);
+  if (!a) return;
+  populateProjectSelects();
+  setTimeout(() => {
+    document.getElementById('acceptanceId').value = a.id;
+    document.getElementById('acceptanceProject').value = a.projectId || '';
+    document.getElementById('acceptanceContent').value = a.content || '';
+    document.getElementById('acceptancePerson').value = a.person || '';
+    document.getElementById('acceptanceDate').value = a.date || '';
+    document.getElementById('acceptanceResult').value = a.result || 'pending';
+    document.getElementById('acceptanceNotes').value = a.notes || '';
+    openModal('acceptanceModal');
+  }, 50);
+}
+
+function deleteAcceptance(id) {
+  confirmAction('确定要删除该验收记录吗？', () => {
+    data.acceptances = data.acceptances.filter(a => a.id !== id);
+    saveData(); renderAcceptances(); showToast('已删除', 'success');
+  });
+}
+
+// ========== Review ==========
+function renderReviews() {
+  document.getElementById('reviewList').innerHTML = data.reviews.length === 0 ?
+    '<div class="empty-state" style="padding:40px"><div class="empty-icon">&#x1F4DA;</div><div class="empty-text">暂无复盘记录</div></div>' :
+    data.reviews.map(r => {
+      const proj = data.projects.find(p => p.id === r.projectId);
+      return `<div class="card" style="margin-bottom:12px">
+        <div class="card-header">
+          <div class="card-title">${proj?.name || '未关联项目'}</div>
+          <div class="action-group">
+            <button class="btn sm outline" onclick="editReview('${r.id}')">编辑</button>
+            <button class="btn sm danger" onclick="deleteReview('${r.id}')">删除</button>
+          </div>
+        </div>
+        <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div style="font-weight:600;color:var(--success);margin-bottom:6px;font-size:0.85rem">&#x2705; 做得好的</div>
+            <div style="font-size:0.85rem;color:var(--gray-600)">${r.good || '暂无'}</div>
+          </div>
+          <div>
+            <div style="font-weight:600;color:var(--danger);margin-bottom:6px;font-size:0.85rem">&#x26A0; 需要改进的</div>
+            <div style="font-size:0.85rem;color:var(--gray-600)">${r.improve || '暂无'}</div>
+          </div>
+          <div>
+            <div style="font-weight:600;color:var(--info);margin-bottom:6px;font-size:0.85rem">&#x1F4A1; 经验教训</div>
+            <div style="font-size:0.85rem;color:var(--gray-600)">${r.lessons || '暂无'}</div>
+          </div>
+          <div>
+            <div style="font-weight:600;color:var(--purple,#7C3AED);margin-bottom:6px;font-size:0.85rem">&#x1F680; 下一步行动</div>
+            <div style="font-size:0.85rem;color:var(--gray-600)">${r.actions || '暂无'}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function saveReview() {
+  const id = document.getElementById('reviewId').value;
+  const projectId = document.getElementById('reviewProject').value;
+  if (!projectId) return showToast('请选择复盘项目', 'error');
+
+  const proj = data.projects.find(p => p.id === projectId);
+  const obj = {
+    id: id || genId(),
+    projectId,
+    projectName: proj?.name || '',
+    good: document.getElementById('reviewGood').value.trim(),
+    improve: document.getElementById('reviewImprove').value.trim(),
+    lessons: document.getElementById('reviewLessons').value.trim(),
+    actions: document.getElementById('reviewActions').value.trim()
+  };
+
+  if (id) {
+    const idx = data.reviews.findIndex(r => r.id === id);
+    if (idx >= 0) data.reviews[idx] = { ...data.reviews[idx], ...obj };
+  } else {
+    data.reviews.push(obj);
+    addActivity(`新建复盘: ${proj?.name || ''}`, 'var(--success)');
+  }
+  saveData(); closeModal('reviewModal'); clearForm('reviewModal');
+  renderReviews(); showToast('复盘已保存', 'success');
+}
+
+function editReview(id) {
+  const r = data.reviews.find(x => x.id === id);
+  if (!r) return;
+  populateProjectSelects();
+  setTimeout(() => {
+    document.getElementById('reviewId').value = r.id;
+    document.getElementById('reviewProject').value = r.projectId || '';
+    document.getElementById('reviewGood').value = r.good || '';
+    document.getElementById('reviewImprove').value = r.improve || '';
+    document.getElementById('reviewLessons').value = r.lessons || '';
+    document.getElementById('reviewActions').value = r.actions || '';
+    openModal('reviewModal');
+  }, 50);
+}
+
+function deleteReview(id) {
+  confirmAction('确定要删除该复盘吗？', () => {
+    data.reviews = data.reviews.filter(r => r.id !== id);
+    saveData(); renderReviews(); showToast('已删除', 'success');
+  });
+}
+
+// ========== Project Close ==========
+function renderProjectClose() {
+  const filter = document.getElementById('closeFilter')?.value || 'closing';
+  let list = data.projects.filter(p => p.status === filter);
+
+  document.getElementById('closeList').innerHTML = list.length === 0 ?
+    '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400)">暂无数据</td></tr>' :
+    list.map(p => {
+      const progress = calcProjectProgress(p.id);
+      const received = data.receivings.filter(r => r.projectId === p.id && r.status === 'confirmed').reduce((s,r) => s + Number(r.amount||0), 0);
+      return `<tr>
+        <td><strong>${p.name}</strong></td>
+        <td>${p.client || '-'}</td>
+        <td>${money(p.budget)}</td>
+        <td style="color:var(--success);font-weight:600">${money(received)}</td>
+        <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill ${progress>=80?'green':''}" style="width:${progress}%"></div></div><span style="font-size:0.8rem">${progress}%</span></div></td>
+        <td>${statusBadge(p.status)}</td>
+        <td>
+          ${p.status === 'closing' ?
+            `<button class="btn sm success" onclick="closeProject('${p.id}')">确认结项</button>` :
+            `<button class="btn sm outline" onclick="editProject('${p.id}')">查看</button>`
+          }
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function closeProject(id) {
+  confirmAction('确认结项该项目？结项后项目状态将变为"已结项"。', () => {
+    const p = data.projects.find(x => x.id === id);
+    if (p) {
+      p.status = 'closed';
+      addActivity(`项目结项: ${p.name}`, 'var(--success)');
+    }
+    saveData(); renderProjectClose(); showToast('项目已结项', 'success');
+  });
+}
+
+// ========== Payment ==========
+function renderPayments() {
+  const search = (document.getElementById('paymentSearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('paymentFilter')?.value || 'all';
+  let list = data.payments;
+  if (filter !== 'all') list = list.filter(p => p.status === filter);
+  if (search) list = list.filter(p => (p.projectName+p.reason+p.payee||'').toLowerCase().includes(search));
+
+  // Summary
+  const totalExpense = list.reduce((s,p) => s + Number(p.amount||0), 0);
+  const pendingAmount = list.filter(p => p.status === 'pending').reduce((s,p) => s + Number(p.amount||0), 0);
+  const paidAmount = list.filter(p => p.status === 'paid').reduce((s,p) => s + Number(p.amount||0), 0);
+  document.getElementById('paymentSummary').innerHTML = `
+    <div class="finance-card"><div class="amount expense">${money(totalExpense)}</div><div class="label">申请总额</div></div>
+    <div class="finance-card"><div class="amount pending">${money(pendingAmount)}</div><div class="label">待审批</div></div>
+    <div class="finance-card"><div class="amount">${money(paidAmount)}</div><div class="label">已付款</div></div>
+    <div class="finance-card"><div class="amount" style="color:var(--gray-700)">${list.length}</div><div class="label">申请单数</div></div>
+  `;
+
+  document.getElementById('paymentList').innerHTML = list.length === 0 ?
+    '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400)">暂无付款记录</td></tr>' :
+    list.map(p => {
+      const proj = data.projects.find(pr => pr.id === p.projectId);
+      return `<tr>
+        <td>${p.no || '-'}</td>
+        <td>${proj?.name || '-'}</td>
+        <td>${p.reason ? p.reason.substring(0,30) + (p.reason.length>30?'...':'') : '-'}</td>
+        <td style="font-weight:600;color:var(--danger)">${money(p.amount)}</td>
+        <td>${p.payee || '-'}</td>
+        <td>${statusBadge(p.status)}</td>
+        <td>${p.date || p.createdAt || '-'}</td>
+        <td class="action-group">
+          ${p.status === 'pending' ? `
+            <button class="btn sm success" onclick="approvePayment('${p.id}')">审批</button>
+            <button class="btn sm danger" onclick="rejectPayment('${p.id}')">驳回</button>
+          ` : `<button class="btn sm outline" onclick="editPayment('${p.id}')">查看</button>`}
+          <button class="btn sm danger" onclick="deletePayment('${p.id}')">删除</button>
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function savePayment() {
+  const id = document.getElementById('paymentId').value;
+  const projectId = document.getElementById('paymentProject').value;
+  if (!projectId) return showToast('请选择关联项目', 'error');
+
+  const proj = data.projects.find(p => p.id === projectId);
+  const obj = {
+    id: id || genId(),
+    no: 'PAY-' + today().replace(/-/g, '').slice(2) + '-' + Math.random().toString(36).substr(2,3).toUpperCase(),
+    projectId,
+    projectName: proj?.name || '',
+    amount: document.getElementById('paymentAmount').value,
+    payee: document.getElementById('paymentPayee').value.trim(),
+    date: document.getElementById('paymentDate').value,
+    reason: document.getElementById('paymentReason').value.trim(),
+    status: 'pending',
+    createdAt: today()
+  };
+
+  if (id) {
+    const idx = data.payments.findIndex(p => p.id === id);
+    if (idx >= 0) data.payments[idx] = { ...data.payments[idx], ...obj };
+  } else {
+    data.payments.push(obj);
+    addActivity(`付款申请: ${money(obj.amount)} (${proj?.name || ''})`, 'var(--warning)');
+  }
+  saveData(); closeModal('paymentModal'); clearForm('paymentModal');
+  renderPayments(); showToast('付款申请已提交', 'success');
+}
+
+function editPayment(id) {
+  const p = data.payments.find(x => x.id === id);
+  if (!p) return;
+  populateProjectSelects();
+  setTimeout(() => {
+    document.getElementById('paymentId').value = p.id;
+    document.getElementById('paymentProject').value = p.projectId || '';
+    document.getElementById('paymentAmount').value = p.amount || '';
+    document.getElementById('paymentPayee').value = p.payee || '';
+    document.getElementById('paymentDate').value = p.date || '';
+    document.getElementById('paymentReason').value = p.reason || '';
+    openModal('paymentModal');
+  }, 50);
+}
+
+function approvePayment(id) {
+  confirmAction('确认审批通过该付款申请？', () => {
+    const p = data.payments.find(x => x.id === id);
+    if (p) {
+      p.status = 'approved';
+      addActivity(`付款审批通过: ${money(p.amount)}`, 'var(--success)');
+    }
+    saveData(); renderPayments(); showToast('已审批通过', 'success');
+  });
+}
+
+function rejectPayment(id) {
+  confirmAction('确认驳回该付款申请？', () => {
+    const p = data.payments.find(x => x.id === id);
+    if (p) { p.status = 'rejected'; addActivity(`付款申请被驳回: ${money(p.amount)}`, 'var(--danger)'); }
+    saveData(); renderPayments(); showToast('已驳回', 'success');
+  });
+}
+
+function deletePayment(id) {
+  confirmAction('确定要删除吗？', () => {
+    data.payments = data.payments.filter(p => p.id !== id);
+    saveData(); renderPayments(); showToast('已删除', 'success');
+  });
+}
+
+// ========== Receiving ==========
+function renderReceivings() {
+  const search = (document.getElementById('receivingSearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('receivingFilter')?.value || 'all';
+  let list = data.receivings;
+  if (filter !== 'all') list = list.filter(r => r.status === filter);
+  if (search) list = list.filter(r => (r.projectName+r.payer||'').toLowerCase().includes(search));
+
+  document.getElementById('receivingList').innerHTML = list.length === 0 ?
+    '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400)">暂无回款记录</td></tr>' :
+    list.map(r => {
+      const proj = data.projects.find(p => p.id === r.projectId);
+      return `<tr>
+        <td>${r.no || '-'}</td>
+        <td>${proj?.name || '-'}</td>
+        <td style="font-weight:600;color:var(--success)">${money(r.amount)}</td>
+        <td>${r.payer || '-'}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td>${r.date || '-'}</td>
+        <td class="action-group">
+          ${r.status === 'pending' ? `<button class="btn sm success" onclick="confirmReceiving('${r.id}')">确认</button>` : ''}
+          <button class="btn sm outline" onclick="editReceiving('${r.id}')">编辑</button>
+          <button class="btn sm danger" onclick="deleteReceiving('${r.id}')">删除</button>
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function saveReceiving() {
+  const id = document.getElementById('receivingId').value;
+  const projectId = document.getElementById('receivingProject').value;
+  if (!projectId) return showToast('请选择关联项目', 'error');
+
+  const proj = data.projects.find(p => p.id === projectId);
+  const obj = {
+    id: id || genId(),
+    no: 'RCV-' + today().replace(/-/g, '').slice(2),
+    projectId,
+    projectName: proj?.name || '',
+    amount: document.getElementById('receivingAmount').value,
+    payer: document.getElementById('receivingPayer').value.trim(),
+    date: document.getElementById('receivingDate').value,
+    notes: document.getElementById('receivingNotes').value.trim(),
+    status: 'pending',
+    createdAt: today()
+  };
+
+  if (id) {
+    const idx = data.receivings.findIndex(r => r.id === id);
+    if (idx >= 0) data.receivings[idx] = { ...data.receivings[idx], ...obj };
+  } else {
+    data.receivings.push(obj);
+    addActivity(`回款登记: ${money(obj.amount)} (${proj?.name || ''})`, 'var(--success)');
+  }
+  saveData(); closeModal('receivingModal'); clearForm('receivingModal');
+  renderReceivings(); showToast('回款已登记', 'success');
+}
+
+function editReceiving(id) {
+  const r = data.receivings.find(x => x.id === id);
+  if (!r) return;
+  populateProjectSelects();
+  setTimeout(() => {
+    document.getElementById('receivingId').value = r.id;
+    document.getElementById('receivingProject').value = r.projectId || '';
+    document.getElementById('receivingAmount').value = r.amount || '';
+    document.getElementById('receivingPayer').value = r.payer || '';
+    document.getElementById('receivingDate').value = r.date || '';
+    document.getElementById('receivingNotes').value = r.notes || '';
+    openModal('receivingModal');
+  }, 50);
+}
+
+function confirmReceiving(id) {
+  const r = data.receivings.find(x => x.id === id);
+  if (r) { r.status = 'confirmed'; addActivity(`回款确认: ${money(r.amount)}`, 'var(--success)'); }
+  saveData(); renderReceivings(); showToast('回款已确认', 'success');
+}
+
+function deleteReceiving(id) {
+  confirmAction('确定要删除吗？', () => {
+    data.receivings = data.receivings.filter(r => r.id !== id);
+    saveData(); renderReceivings(); showToast('已删除', 'success');
+  });
+}
+
+// ========== Invoice ==========
+function renderInvoices() {
+  const search = (document.getElementById('invoiceSearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('invoiceFilter')?.value || 'all';
+  let list = data.invoices;
+  if (filter !== 'all') list = list.filter(i => i.status === filter);
+  if (search) list = list.filter(i => (i.no+i.projectName+i.buyer||'').toLowerCase().includes(search));
+
+  document.getElementById('invoiceList').innerHTML = list.length === 0 ?
+    '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400)">暂无发票记录</td></tr>' :
+    list.map(i => {
+      const proj = data.projects.find(p => p.id === i.projectId);
+      const typeMap = { vat_special: '增值税专用', vat_normal: '增值税普通', electronic: '电子发票' };
+      return `<tr>
+        <td>${i.no || '-'}</td>
+        <td>${proj?.name || '-'}</td>
+        <td style="font-weight:600">${money(i.amount)}</td>
+        <td><span class="badge blue">${typeMap[i.type] || i.type}</span></td>
+        <td>${i.buyer || '-'}</td>
+        <td>${statusBadge(i.status)}</td>
+        <td>${i.createdAt || '-'}</td>
+        <td class="action-group">
+          ${i.status === 'pending' ? `<button class="btn sm success" onclick="invoiceDone('${i.id}')">已开票</button>` : ''}
+          <button class="btn sm outline" onclick="editInvoice('${i.id}')">编辑</button>
+          <button class="btn sm danger" onclick="deleteInvoice('${i.id}')">删除</button>
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function saveInvoice() {
+  const id = document.getElementById('invoiceId').value;
+  const projectId = document.getElementById('invoiceProject').value;
+  if (!projectId) return showToast('请选择关联项目', 'error');
+
+  const proj = data.projects.find(p => p.id === projectId);
+  const obj = {
+    id: id || genId(),
+    no: 'INV-' + today().replace(/-/g, '').slice(2),
+    projectId,
+    projectName: proj?.name || '',
+    amount: document.getElementById('invoiceAmount').value,
+    type: document.getElementById('invoiceType').value,
+    buyer: document.getElementById('invoiceBuyer').value.trim(),
+    notes: document.getElementById('invoiceNotes').value.trim(),
+    status: 'pending',
+    createdAt: today()
+  };
+
+  if (id) {
+    const idx = data.invoices.findIndex(i => i.id === id);
+    if (idx >= 0) data.invoices[idx] = { ...data.invoices[idx], ...obj };
+  } else {
+    data.invoices.push(obj);
+    addActivity(`开票申请: ${money(obj.amount)} (${proj?.name || ''})`, 'var(--warning)');
+  }
+  saveData(); closeModal('invoiceModal'); clearForm('invoiceModal');
+  renderInvoices(); showToast('开票申请已提交', 'success');
+}
+
+function editInvoice(id) {
+  const i = data.invoices.find(x => x.id === id);
+  if (!i) return;
+  populateProjectSelects();
+  setTimeout(() => {
+    document.getElementById('invoiceId').value = i.id;
+    document.getElementById('invoiceProject').value = i.projectId || '';
+    document.getElementById('invoiceAmount').value = i.amount || '';
+    document.getElementById('invoiceType').value = i.type || 'vat_special';
+    document.getElementById('invoiceBuyer').value = i.buyer || '';
+    document.getElementById('invoiceNotes').value = i.notes || '';
+    openModal('invoiceModal');
+  }, 50);
+}
+
+function invoiceDone(id) {
+  const i = data.invoices.find(x => x.id === id);
+  if (i) { i.status = 'invoiced'; addActivity(`已开票: ${money(i.amount)}`, 'var(--success)'); }
+  saveData(); renderInvoices(); showToast('已标记为已开票', 'success');
+}
+
+function deleteInvoice(id) {
+  confirmAction('确定要删除吗？', () => {
+    data.invoices = data.invoices.filter(i => i.id !== id);
+    saveData(); renderInvoices(); showToast('已删除', 'success');
+  });
+}
+
+// ========== Clear Form ==========
+function clearForm(modalId) {
+  const modal = document.getElementById(modalId);
+  modal.querySelectorAll('input[type="hidden"]').forEach(h => h.value = '');
+  modal.querySelectorAll('input[type="text"],input[type="number"],input[type="date"],textarea').forEach(i => i.value = '');
+  modal.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+}
+
+// ========== Export ==========
+function exportData() {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `项目管理系统_导出_${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据已导出', 'success');
+}
+
+// ========== Task project change -> update milestone select ==========
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'taskProject') {
+    const ms = document.getElementById('taskMilestone');
+    const projId = e.target.value;
+    ms.innerHTML = '<option value="">无</option>';
+    data.milestones.filter(m => !projId || m.projectId === projId).forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.name;
+      ms.appendChild(opt);
+    });
+  }
+});
+
+// ========== Init ==========
+function init() {
+  renderDashboard();
+}
+
+init();
+</script>
+</body>
+</html>
