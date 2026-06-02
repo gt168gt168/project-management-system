@@ -753,6 +753,62 @@ select.form-control { cursor: pointer; }
   font-size: 0.8rem;
   color: var(--gray-400);
 }
+/* ========== Login Tabs ========== */
+.login-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--gray-200);
+}
+.login-tab {
+  flex: 1;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--transition);
+}
+.login-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+.login-tab:hover { color: var(--gray-600); }
+/* ========== SMS Code Input ========== */
+.sms-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.sms-group input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.sms-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,108,247,0.1); }
+.sms-send-btn {
+  white-space: nowrap;
+  padding: 12px 16px;
+  background: var(--gray-100);
+  color: var(--primary);
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.sms-send-btn:hover { background: var(--gray-200); }
+.sms-send-btn:disabled { opacity: 0.5; cursor: not-allowed; color: var(--gray-400); }
+.sms-send-btn.counting { color: var(--gray-400); background: var(--gray-50); }
 </style>
 </head>
 <body>
@@ -1836,16 +1892,47 @@ select.form-control { cursor: pointer; }
     <div class="login-logo">P</div>
     <h2 id="loginTitle">项目管理系统</h2>
     <p class="login-subtitle" id="loginSubtitle">请输入密码进入系统</p>
-    <div class="input-group">
-      <input type="password" id="loginPassword" placeholder="请输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()">
-      <button class="toggle-pwd" type="button" onclick="toggleLoginPwd()" title="显示/隐藏密码">&#x1F441;</button>
+
+    <!-- Tab 切换 -->
+    <div class="login-tabs" id="loginTabs">
+      <button class="login-tab active" data-tab="pwd" onclick="switchLoginTab('pwd')">密码登录</button>
+      <button class="login-tab" data-tab="phone" onclick="switchLoginTab('phone')">手机号注册</button>
     </div>
-    <div class="input-group" id="confirmPwdGroup" style="display:none">
-      <input type="password" id="loginConfirmPassword" placeholder="再次输入密码" autocomplete="new-password" onkeydown="if(event.key==='Enter')handleLogin()">
+
+    <!-- 密码登录面板 -->
+    <div id="pwdPanel">
+      <div class="input-group">
+        <input type="password" id="loginPassword" placeholder="请输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()">
+        <button class="toggle-pwd" type="button" onclick="toggleLoginPwd()" title="显示/隐藏密码">&#x1F441;</button>
+      </div>
+      <div class="input-group" id="confirmPwdGroup" style="display:none">
+        <input type="password" id="loginConfirmPassword" placeholder="再次输入密码" autocomplete="new-password" onkeydown="if(event.key==='Enter')handleLogin()">
+      </div>
+      <button class="login-btn" id="loginBtn" onclick="handleLogin()">进入系统</button>
+      <div class="login-error" id="loginError"></div>
+      <p class="login-hint" id="loginHint"></p>
     </div>
-    <button class="login-btn" id="loginBtn" onclick="handleLogin()">进入系统</button>
-    <div class="login-error" id="loginError"></div>
-    <p class="login-hint" id="loginHint"></p>
+
+    <!-- 手机号注册/登录面板 -->
+    <div id="phonePanel" style="display:none">
+      <div class="input-group">
+        <input type="tel" id="phoneNumber" placeholder="请输入手机号" autocomplete="tel" maxlength="11" oninput="this.value=this.value.replace(/\\D/g,'')" onkeydown="if(event.key==='Enter')handlePhoneRegister()">
+      </div>
+      <div class="sms-group">
+        <input type="text" id="smsCode" placeholder="短信验证码" maxlength="6" autocomplete="one-time-code" oninput="this.value=this.value.replace(/\\D/g,'')" onkeydown="if(event.key==='Enter')handlePhoneRegister()">
+        <button class="sms-send-btn" id="smsSendBtn" onclick="sendSmsCode()">获取验证码</button>
+      </div>
+      <div class="input-group">
+        <input type="password" id="phonePassword" placeholder="设置登录密码（至少4位）" autocomplete="new-password" onkeydown="if(event.key==='Enter')handlePhoneRegister()">
+        <button class="toggle-pwd" type="button" onclick="togglePhonePwd()" title="显示/隐藏密码">&#x1F441;</button>
+      </div>
+      <div class="input-group">
+        <input type="password" id="phonePassword2" placeholder="确认密码" autocomplete="new-password" onkeydown="if(event.key==='Enter')handlePhoneRegister()">
+      </div>
+      <button class="login-btn" id="phoneRegBtn" onclick="handlePhoneRegister()">注册 / 登录</button>
+      <div class="login-error" id="phoneLoginError"></div>
+      <p class="login-hint" id="phoneLoginHint">首次注册将自动绑定手机号，后续可用密码登录</p>
+    </div>
   </div>
 </div>
 
@@ -1892,6 +1979,10 @@ function money(n) { return '¥' + Number(n||0).toLocaleString('zh-CN', {minimumF
 // ========== Password Auth ==========
 const PWD_KEY = 'pm_system_pwd';
 const AUTH_KEY = 'pm_system_authed';
+const PHONE_KEY = 'pm_system_phone';       // 绑定的手机号
+const USERS_KEY = 'pm_system_users';       // 用户列表 { phoneHash: passwordHash }
+let smsTimer = null;
+let smsCountdown = 0;
 
 // 简单哈希（纯前端用 SHA-256）
 async function hashPassword(pwd) {
@@ -1901,8 +1992,85 @@ async function hashPassword(pwd) {
   return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
+// 手机号哈希（用于存储key）
+async function hashPhone(phone) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(phone + 'pm_phone_salt');
+  const hashBuf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
 function isPasswordSet() { return !!localStorage.getItem(PWD_KEY); }
 function isAuthenticated() { return sessionStorage.getItem(AUTH_KEY) === 'true'; }
+function getBoundPhone() { return localStorage.getItem(PHONE_KEY) || ''; }
+
+// ========== Tab 切换 ==========
+function switchLoginTab(tab) {
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.login-tab[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById('pwdPanel').style.display = tab === 'pwd' ? 'block' : 'none';
+  document.getElementById('phonePanel').style.display = tab === 'phone' ? 'block' : 'none';
+  currentLoginTab = tab;
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('phoneLoginError').textContent = '';
+}
+
+// ========== SMS 验证码 ==========
+function sendSmsCode() {
+  const phone = document.getElementById('phoneNumber').value.trim();
+  const errEl = document.getElementById('phoneLoginError');
+  const btn = document.getElementById('smsSendBtn');
+
+  if (!phone) { errEl.textContent = '请输入手机号'; return; }
+  if (!/^1[3-9]\d{9}$/.test(phone)) { errEl.textContent = '请输入有效的11位手机号'; return; }
+
+  // 模拟发送验证码
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  sessionStorage.setItem('pm_sms_code_' + phone, code);
+  sessionStorage.setItem('pm_sms_time_' + phone, Date.now().toString());
+
+  errEl.textContent = '';
+  errEl.style.color = 'var(--success)';
+  errEl.textContent = '验证码已发送（模拟）：' + code;
+  setTimeout(() => { errEl.style.color = 'var(--danger)'; }, 5000);
+
+  // 60秒倒计时
+  smsCountdown = 60;
+  btn.disabled = true;
+  btn.classList.add('counting');
+  updateSmsBtn();
+  smsTimer = setInterval(() => {
+    smsCountdown--;
+    if (smsCountdown <= 0) {
+      clearInterval(smsTimer);
+      btn.disabled = false;
+      btn.classList.remove('counting');
+      btn.textContent = '获取验证码';
+    } else {
+      updateSmsBtn();
+    }
+  }, 1000);
+}
+
+function updateSmsBtn() {
+  const btn = document.getElementById('smsSendBtn');
+  btn.textContent = smsCountdown + 's 后重发';
+}
+
+// 验证短信验证码
+function verifySmsCode(phone, code) {
+  const saved = sessionStorage.getItem('pm_sms_code_' + phone);
+  const time = sessionStorage.getItem('pm_sms_time_' + phone);
+  if (!saved || !time) return false;
+  if (Date.now() - parseInt(time) > 300000) return false; // 5分钟过期
+  return saved === code;
+}
+
+// ========== 切换手机密码可见 ==========
+function togglePhonePwd() {
+  const inp = document.getElementById('phonePassword');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
 
 // 切换登录密码可见
 function toggleLoginPwd() {
@@ -1946,11 +2114,83 @@ function handleLogout() {
     sessionStorage.removeItem(AUTH_KEY);
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginError').textContent = '';
+    document.getElementById('phoneNumber').value = '';
+    document.getElementById('smsCode').value = '';
+    document.getElementById('phonePassword').value = '';
+    document.getElementById('phonePassword2').value = '';
+    document.getElementById('phoneLoginError').textContent = '';
+    initLoginUI();
     document.getElementById('loginOverlay').classList.remove('hidden');
   });
 }
 
-// 处理登录
+// ========== 手机号注册/登录 ==========
+async function handlePhoneRegister() {
+  const phone = document.getElementById('phoneNumber').value.trim();
+  const smsCode = document.getElementById('smsCode').value.trim();
+  const pwd = document.getElementById('phonePassword').value;
+  const pwd2 = document.getElementById('phonePassword2').value;
+  const errEl = document.getElementById('phoneLoginError');
+  const btn = document.getElementById('phoneRegBtn');
+
+  if (!phone) { errEl.textContent = '请输入手机号'; return; }
+  if (!/^1[3-9]\d{9}$/.test(phone)) { errEl.textContent = '请输入有效的11位手机号'; return; }
+  if (!smsCode) { errEl.textContent = '请输入短信验证码'; return; }
+  if (!pwd) { errEl.textContent = '请设置登录密码'; return; }
+  if (pwd !== pwd2) { errEl.textContent = '两次输入的密码不一致'; return; }
+  if (pwd.length < 4) { errEl.textContent = '密码长度至少4位'; return; }
+
+  // 验证短信验证码
+  if (!verifySmsCode(phone, smsCode)) {
+    errEl.textContent = '验证码错误或已过期，请重新获取';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '处理中...';
+
+  const phoneHash = await hashPhone(phone);
+  const pwdHash = await hashPassword(pwd);
+  const users = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+
+  if (users[phoneHash]) {
+    // 已有此手机号的记录，验证密码是否匹配（用于登录场景）
+    if (users[phoneHash] !== pwdHash) {
+      btn.disabled = false;
+      btn.textContent = '注册 / 登录';
+      errEl.textContent = '该手机号已注册，但密码不匹配';
+      return;
+    }
+  } else {
+    // 新用户注册
+    users[phoneHash] = pwdHash;
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+
+  // 如果没有设置过主密码，用这个密码作为主密码
+  if (!isPasswordSet()) {
+    localStorage.setItem(PWD_KEY, pwdHash);
+  }
+
+  // 绑定手机号
+  localStorage.setItem(PHONE_KEY, phone);
+
+  // 登录成功
+  errEl.textContent = '';
+  errEl.style.color = 'var(--danger)';
+  sessionStorage.setItem(AUTH_KEY, 'true');
+  sessionStorage.removeItem('pm_sms_code_' + phone);
+  sessionStorage.removeItem('pm_sms_time_' + phone);
+  document.getElementById('loginOverlay').classList.add('hidden');
+  renderDashboard();
+
+  const isNewUser = !users[phoneHash] || users[phoneHash] === pwdHash;
+  // 检测：如果 users 之前没有此 phoneHash，则是新注册
+  btn.disabled = false;
+  btn.textContent = '注册 / 登录';
+}
+
+// 处理密码登录
 async function handleLogin() {
   const pwd = document.getElementById('loginPassword').value;
   const errorEl = document.getElementById('loginError');
@@ -1996,12 +2236,15 @@ async function handleLogin() {
 }
 
 // 初始化登录界面
+let currentLoginTab = 'pwd';
+
 function initLoginUI() {
   const titleEl = document.getElementById('loginTitle');
   const subtitleEl = document.getElementById('loginSubtitle');
   const confirmGroup = document.getElementById('confirmPwdGroup');
   const btn = document.getElementById('loginBtn');
   const hintEl = document.getElementById('loginHint');
+  const tabsEl = document.getElementById('loginTabs');
 
   if (isPasswordSet()) {
     titleEl.textContent = '欢迎回来';
@@ -2009,12 +2252,27 @@ function initLoginUI() {
     confirmGroup.style.display = 'none';
     btn.textContent = '进入系统';
     hintEl.textContent = '';
+
+    // 已注册，显示绑定的手机号提示
+    const boundPhone = getBoundPhone();
+    if (boundPhone) {
+      hintEl.textContent = '已绑定手机号：' + boundPhone.slice(0,3) + '****' + boundPhone.slice(7);
+    }
+
+    // 隐藏注册tab，只显示密码登录
+    tabsEl.style.display = 'none';
+    document.getElementById('pwdPanel').style.display = 'block';
+    document.getElementById('phonePanel').style.display = 'none';
   } else {
     titleEl.textContent = '设置访问密码';
-    subtitleEl.textContent = '首次使用，请设置系统密码';
+    subtitleEl.textContent = '首次使用，请设置密码或手机号注册';
     confirmGroup.style.display = 'block';
     btn.textContent = '设置密码';
     hintEl.textContent = '密码将保存在本地浏览器中';
+
+    // 显示tab切换，默认密码设置
+    tabsEl.style.display = 'flex';
+    switchLoginTab('pwd');
   }
 }
 
