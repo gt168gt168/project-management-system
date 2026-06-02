@@ -819,7 +819,7 @@ select.form-control { cursor: pointer; }
                       <th>进度</th>
                       <th>合同额</th>
                       <th>负责人</th>
-                      <th>截止日期</th>
+                      <th>时间范围</th>
                     </tr>
                   </thead>
                   <tbody id="dashProjectList"></tbody>
@@ -996,7 +996,7 @@ select.form-control { cursor: pointer; }
             <div class="table-wrap">
               <table>
                 <thead>
-                  <tr><th>任务名称</th><th>所属项目</th><th>优先级</th><th>负责人</th><th>状态</th><th>截止日期</th><th>进度</th><th>操作</th></tr>
+                  <tr><th>任务名称</th><th>所属项目</th><th>优先级</th><th>负责人</th><th>状态</th><th>时间范围</th><th>进度</th><th>操作</th></tr>
                 </thead>
                 <tbody id="taskList"></tbody>
               </table>
@@ -1266,7 +1266,7 @@ select.form-control { cursor: pointer; }
           <input type="text" class="form-control" id="projectManager" placeholder="项目负责人">
         </div>
       </div>
-      <div class="form-row">
+      <div class="form-row-3">
         <div class="form-group">
           <label class="form-label">项目状态</label>
           <select class="form-control" id="projectStatus">
@@ -1277,8 +1277,12 @@ select.form-control { cursor: pointer; }
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">计划截止日期</label>
-          <input type="date" class="form-control" id="projectDeadline">
+          <label class="form-label">开始时间</label>
+          <input type="date" class="form-control" id="projectStartDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">结束时间</label>
+          <input type="date" class="form-control" id="projectEndDate">
         </div>
       </div>
       <div class="form-row">
@@ -1378,10 +1382,14 @@ select.form-control { cursor: pointer; }
           <input type="text" class="form-control" id="milestoneName" placeholder="如: 需求确认、开发完成">
         </div>
       </div>
-      <div class="form-row">
+      <div class="form-row-3">
         <div class="form-group">
-          <label class="form-label">计划日期</label>
-          <input type="date" class="form-control" id="milestoneDate">
+          <label class="form-label">开始时间</label>
+          <input type="date" class="form-control" id="milestoneStartDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">结束时间</label>
+          <input type="date" class="form-control" id="milestoneEndDate">
         </div>
         <div class="form-group">
           <label class="form-label">状态</label>
@@ -1427,7 +1435,7 @@ select.form-control { cursor: pointer; }
           <select class="form-control" id="taskMilestone"><option value="">无</option></select>
         </div>
       </div>
-      <div class="form-row-3">
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label">优先级</label>
           <select class="form-control" id="taskPriority">
@@ -1439,6 +1447,12 @@ select.form-control { cursor: pointer; }
         <div class="form-group">
           <label class="form-label">负责人</label>
           <input type="text" class="form-control" id="taskAssignee" placeholder="负责人">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">开始日期</label>
+          <input type="date" class="form-control" id="taskStartDate">
         </div>
         <div class="form-group">
           <label class="form-label">截止日期</label>
@@ -1933,7 +1947,7 @@ function renderDashboard() {
         <td><div style="display:flex;align-items:center;gap:8px;"><div class="progress-bar" style="width:80px;"><div class="progress-fill ${progress>=80?'green':progress>=50?'':'yellow'}" style="width:${progress}%"></div></div><span style="font-size:0.8rem;color:var(--gray-500)">${progress}%</span></div></td>
         <td>${money(p.budget)}</td>
         <td>${p.manager || '-'}</td>
-        <td>${p.deadline || '-'}</td>
+        <td>${p.startDate||'-'} ~ ${p.endDate||'-'}</td>
       </tr>`;
     }).join('');
   }
@@ -1966,7 +1980,7 @@ function renderDashboard() {
         <div class="activity-dot" style="background:${t.status==='todo'?'var(--warning)':'var(--primary)'}"></div>
         <div class="activity-content">
           <div class="activity-text"><span class="priority-dot ${t.priority}"></span>${t.name}</div>
-          <div class="activity-time">${t.projectName || ''} ${t.assignee ? '· ' + t.assignee : ''} ${t.deadline ? '· 截止 ' + t.deadline : ''}</div>
+          <div class="activity-time">${t.projectName || ''} ${t.assignee ? '· ' + t.assignee : ''} ${t.startDate || t.deadline ? '· ' + (t.startDate||'?') + ' ~ ' + (t.deadline||'?') : ''}</div>
         </div>
         ${statusBadge(t.status)}
       </div>
@@ -2124,6 +2138,7 @@ function renderProjects() {
       </div>
       <div class="project-card-meta">
         <div>${p.manager ? '负责人: ' + p.manager : ''}</div>
+        <div style="font-size:0.75rem;color:var(--gray-400);margin-top:4px">${p.startDate||'?'} ~ ${p.endDate||'?'}</div>
         <div class="project-card-members">
           ${members.map((m,i) => `<div class="member-avatar" style="background:${['var(--primary)','#7C3AED','var(--success)'][i%3]}">${m.charAt(0)}</div>`).join('')}
         </div>
@@ -2143,7 +2158,8 @@ function saveProject() {
     client: document.getElementById('projectClient').value.trim(),
     manager: document.getElementById('projectManager').value.trim(),
     status: document.getElementById('projectStatus').value,
-    deadline: document.getElementById('projectDeadline').value,
+    startDate: document.getElementById('projectStartDate').value,
+    endDate: document.getElementById('projectEndDate').value,
     budget: document.getElementById('projectBudget').value,
     members: document.getElementById('projectMembers').value.trim(),
     description: document.getElementById('projectDescription').value.trim(),
@@ -2174,7 +2190,8 @@ function editProject(id) {
   document.getElementById('projectClient').value = p.client || '';
   document.getElementById('projectManager').value = p.manager || '';
   document.getElementById('projectStatus').value = p.status || 'planning';
-  document.getElementById('projectDeadline').value = p.deadline || '';
+  document.getElementById('projectStartDate').value = p.startDate || '';
+  document.getElementById('projectEndDate').value = p.endDate || '';
   document.getElementById('projectBudget').value = p.budget || '';
   document.getElementById('projectMembers').value = p.members || '';
   document.getElementById('projectDescription').value = p.description || '';
@@ -2291,7 +2308,7 @@ function renderMilestones() {
         <div class="milestone-check ${m.status==='done'?'done':''}" onclick="toggleMilestone('${m.id}')">${m.status==='done'?'&#x2713;':''}</div>
         <div class="milestone-info">
           <div class="milestone-name">${m.name}</div>
-          <div class="milestone-date">${proj?.name || ''} · ${m.date || '无日期'} ${m.deliverables ? '· ' + m.deliverables : ''}</div>
+          <div class="milestone-date">${proj?.name || ''} · ${m.startDate || '?'} → ${m.endDate || '?'} ${m.deliverables ? '· ' + m.deliverables : ''}</div>
         </div>
         ${statusBadge(m.status)}
         <div class="action-group">
@@ -2309,13 +2326,16 @@ function saveMilestone() {
 
   const projId = document.getElementById('milestoneProject').value;
   const proj = data.projects.find(p => p.id === projId);
+  const startDate = document.getElementById('milestoneStartDate').value;
+  const endDate = document.getElementById('milestoneEndDate').value;
 
   const obj = {
     id: id || genId(),
     projectId: projId,
     projectName: proj?.name || '',
     name,
-    date: document.getElementById('milestoneDate').value,
+    startDate: startDate,
+    endDate: endDate,
     status: document.getElementById('milestoneStatus').value,
     deliverables: document.getElementById('milestoneDeliverables').value.trim()
   };
@@ -2325,10 +2345,29 @@ function saveMilestone() {
     if (idx >= 0) data.milestones[idx] = { ...data.milestones[idx], ...obj };
   } else {
     data.milestones.push(obj);
-    addActivity(`添加里程碑: ${name} (${proj?.name || ''})`, 'var(--success)');
+
+    // 自动同步里程碑为任务
+    const taskObj = {
+      id: genId(),
+      name: name,
+      projectId: projId,
+      projectName: proj?.name || '',
+      milestoneId: obj.id,
+      priority: 'medium',
+      assignee: proj?.manager || '',
+      startDate: startDate,
+      deadline: endDate,
+      status: 'todo',
+      progress: 0,
+      description: obj.deliverables || '由里程碑自动创建',
+      createdAt: today()
+    };
+    data.tasks.push(taskObj);
+
+    addActivity(`添加里程碑: ${name} (${proj?.name || ''})，已同步到任务`, 'var(--success)');
   }
   saveData(); closeModal('milestoneModal'); clearForm('milestoneModal');
-  renderMilestones(); showToast('里程碑已保存', 'success');
+  renderMilestones(); showToast(id ? '里程碑已保存' : '里程碑已保存并同步到任务', 'success');
 }
 
 function editMilestone(id) {
@@ -2339,7 +2378,8 @@ function editMilestone(id) {
     document.getElementById('milestoneId').value = m.id;
     document.getElementById('milestoneProject').value = m.projectId || '';
     document.getElementById('milestoneName').value = m.name;
-    document.getElementById('milestoneDate').value = m.date || '';
+    document.getElementById('milestoneStartDate').value = m.startDate || '';
+    document.getElementById('milestoneEndDate').value = m.endDate || '';
     document.getElementById('milestoneStatus').value = m.status || 'pending';
     document.getElementById('milestoneDeliverables').value = m.deliverables || '';
     openModal('milestoneModal');
@@ -2381,7 +2421,7 @@ function renderTasks() {
         <td>${priorityBadge(t.priority || 'medium')}</td>
         <td>${t.assignee || '-'}</td>
         <td>${statusBadge(t.status)}</td>
-        <td>${t.deadline || '-'}</td>
+        <td>${t.startDate||'?'} ~ ${t.deadline||'?'}</td>
         <td><div style="display:flex;align-items:center;gap:6px;width:80px;"><div class="progress-bar" style="flex:1"><div class="progress-fill ${Number(t.progress)>=80?'green':''}" style="width:${t.progress||0}%"></div></div><span style="font-size:0.75rem">${t.progress||0}%</span></div></td>
         <td class="action-group">
           <button class="btn sm outline" onclick="editTask('${t.id}')">编辑</button>
@@ -2407,6 +2447,7 @@ function saveTask() {
     milestoneId: document.getElementById('taskMilestone').value || '',
     priority: document.getElementById('taskPriority').value,
     assignee: document.getElementById('taskAssignee').value.trim(),
+    startDate: document.getElementById('taskStartDate').value,
     deadline: document.getElementById('taskDeadline').value,
     status: document.getElementById('taskStatus').value,
     progress: document.getElementById('taskProgress').value,
@@ -2437,6 +2478,7 @@ function editTask(id) {
     document.getElementById('taskMilestone').value = t.milestoneId || '';
     document.getElementById('taskPriority').value = t.priority || 'medium';
     document.getElementById('taskAssignee').value = t.assignee || '';
+    document.getElementById('taskStartDate').value = t.startDate || '';
     document.getElementById('taskDeadline').value = t.deadline || '';
     document.getElementById('taskStatus').value = t.status || 'todo';
     document.getElementById('taskProgress').value = t.progress || 0;
@@ -2494,7 +2536,7 @@ function renderProgress() {
           <div class="milestone-check ${m.status==='done'?'done':''}" style="width:20px;height:20px;font-size:0.7rem">${m.status==='done'?'&#x2713;':''}</div>
           <div class="milestone-info">
             <div class="milestone-name" style="font-size:0.83rem">${m.name}</div>
-            <div class="milestone-date">${m.date || ''} ${m.deliverables ? '· ' + m.deliverables : ''}</div>
+            <div class="milestone-date">${m.startDate || '?'} → ${m.endDate || '?'} ${m.deliverables ? '· ' + m.deliverables : ''}</div>
           </div>
           ${statusBadge(m.status)}
         </div>`).join('')}
