@@ -673,6 +673,86 @@ select.form-control { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ========== Login Screen ========== */
+.login-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-overlay.hidden { display: none; }
+.login-box {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 40px;
+  width: 380px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  text-align: center;
+}
+.login-box .login-logo {
+  width: 56px; height: 56px;
+  background: var(--primary);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 1.6rem; color: white; font-weight: 700;
+}
+.login-box h2 { font-size: 1.3rem; color: var(--gray-900); margin-bottom: 6px; }
+.login-box .login-subtitle { color: var(--gray-400); font-size: 0.85rem; margin-bottom: 24px; }
+.login-box .input-group {
+  position: relative;
+  margin-bottom: 12px;
+}
+.login-box .input-group input {
+  width: 100%;
+  padding: 12px 44px 12px 16px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.login-box .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,108,247,0.1); }
+.login-box .toggle-pwd {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer; font-size: 1.1rem;
+  color: var(--gray-400); padding: 4px;
+  line-height: 1;
+}
+.login-box .toggle-pwd:hover { color: var(--gray-600); }
+.login-box .login-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  color: white; border: none;
+  border-radius: 8px;
+  font-size: 1rem; font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition);
+  margin-top: 8px;
+}
+.login-box .login-btn:hover { background: var(--primary-dark); }
+.login-box .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.login-box .login-error {
+  color: var(--danger);
+  font-size: 0.82rem;
+  min-height: 20px;
+  margin-top: 8px;
+  transition: all 0.3s;
+}
+.login-box .login-hint {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  color: var(--gray-400);
+}
 </style>
 </head>
 <body>
@@ -747,6 +827,8 @@ select.form-control { cursor: pointer; }
         <div class="breadcrumb">首页 / <span id="breadcrumbCurrent">工作台</span></div>
       </div>
       <div class="header-right">
+        <button class="header-btn outline" onclick="openChangePwdModal()">&#x1F512; 修改密码</button>
+        <button class="header-btn outline" onclick="handleLogout()">&#x1F6AA; 退出</button>
         <button class="header-btn outline" onclick="exportData()">&#x1F4E5; 导出</button>
         <button class="header-btn primary" id="headerAction" onclick="handleHeaderAction()">&#x2795; 新建项目</button>
       </div>
@@ -1719,6 +1801,54 @@ select.form-control { cursor: pointer; }
   </div>
 </div>
 
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="changePwdModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">修改密码</div>
+      <button class="modal-close" onclick="closeModal('changePwdModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">当前密码</label>
+        <input type="password" class="form-control" id="oldPassword" placeholder="输入当前密码" autocomplete="current-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">新密码</label>
+        <input type="password" class="form-control" id="newPassword" placeholder="输入新密码" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">确认新密码</label>
+        <input type="password" class="form-control" id="newPassword2" placeholder="再次输入新密码" autocomplete="new-password">
+      </div>
+      <div id="pwdChangeMsg" style="font-size:0.82rem;min-height:20px;color:var(--danger);margin-top:4px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn outline" onclick="closeModal('changePwdModal')">取消</button>
+      <button class="btn primary" onclick="submitChangePassword()">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login Overlay -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">P</div>
+    <h2 id="loginTitle">项目管理系统</h2>
+    <p class="login-subtitle" id="loginSubtitle">请输入密码进入系统</p>
+    <div class="input-group">
+      <input type="password" id="loginPassword" placeholder="请输入密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()">
+      <button class="toggle-pwd" type="button" onclick="toggleLoginPwd()" title="显示/隐藏密码">&#x1F441;</button>
+    </div>
+    <div class="input-group" id="confirmPwdGroup" style="display:none">
+      <input type="password" id="loginConfirmPassword" placeholder="再次输入密码" autocomplete="new-password" onkeydown="if(event.key==='Enter')handleLogin()">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="handleLogin()">进入系统</button>
+    <div class="login-error" id="loginError"></div>
+    <p class="login-hint" id="loginHint"></p>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -1758,6 +1888,135 @@ function saveData() {
 function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
 function today() { return new Date().toISOString().slice(0, 10); }
 function money(n) { return '¥' + Number(n||0).toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+
+// ========== Password Auth ==========
+const PWD_KEY = 'pm_system_pwd';
+const AUTH_KEY = 'pm_system_authed';
+
+// 简单哈希（纯前端用 SHA-256）
+async function hashPassword(pwd) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pwd + 'pm_salt_2026');
+  const hashBuf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function isPasswordSet() { return !!localStorage.getItem(PWD_KEY); }
+function isAuthenticated() { return sessionStorage.getItem(AUTH_KEY) === 'true'; }
+
+// 切换登录密码可见
+function toggleLoginPwd() {
+  const inp = document.getElementById('loginPassword');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// 打开修改密码弹窗
+function openChangePwdModal() {
+  document.getElementById('oldPassword').value = '';
+  document.getElementById('newPassword').value = '';
+  document.getElementById('newPassword2').value = '';
+  document.getElementById('pwdChangeMsg').textContent = '';
+  openModal('changePwdModal');
+}
+
+// 提交修改密码
+async function submitChangePassword() {
+  const oldPwd = document.getElementById('oldPassword').value;
+  const newPwd = document.getElementById('newPassword').value;
+  const newPwd2 = document.getElementById('newPassword2').value;
+  const msgEl = document.getElementById('pwdChangeMsg');
+
+  if (!oldPwd || !newPwd || !newPwd2) { msgEl.textContent = '请填写所有密码字段'; return; }
+  if (newPwd !== newPwd2) { msgEl.textContent = '两次输入的新密码不一致'; return; }
+  if (newPwd.length < 4) { msgEl.textContent = '新密码长度至少4位'; return; }
+
+  const storedHash = localStorage.getItem(PWD_KEY);
+  const oldHash = await hashPassword(oldPwd);
+  if (oldHash !== storedHash) { msgEl.textContent = '当前密码错误'; return; }
+
+  const newHash = await hashPassword(newPwd);
+  localStorage.setItem(PWD_KEY, newHash);
+  closeModal('changePwdModal');
+  showToast('密码修改成功', 'success');
+}
+
+// 退出登录
+function handleLogout() {
+  confirmAction('确定退出登录？退出后需要重新输入密码。', () => {
+    sessionStorage.removeItem(AUTH_KEY);
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').textContent = '';
+    document.getElementById('loginOverlay').classList.remove('hidden');
+  });
+}
+
+// 处理登录
+async function handleLogin() {
+  const pwd = document.getElementById('loginPassword').value;
+  const errorEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+
+  if (!pwd) { errorEl.textContent = '请输入密码'; return; }
+
+  if (!isPasswordSet()) {
+    // 首次设置密码
+    const pwd2 = document.getElementById('loginConfirmPassword').value;
+    if (!pwd2) { errorEl.textContent = '请再次输入密码进行确认'; return; }
+    if (pwd !== pwd2) { errorEl.textContent = '两次输入的密码不一致'; return; }
+    if (pwd.length < 4) { errorEl.textContent = '密码长度至少4位'; return; }
+
+    btn.disabled = true;
+    btn.textContent = '设置中...';
+    const hash = await hashPassword(pwd);
+    localStorage.setItem(PWD_KEY, hash);
+    sessionStorage.setItem(AUTH_KEY, 'true');
+    document.getElementById('loginOverlay').classList.add('hidden');
+    renderDashboard();
+    btn.disabled = false;
+    btn.textContent = '进入系统';
+    return;
+  }
+
+  // 已有密码，验证
+  btn.disabled = true;
+  btn.textContent = '验证中...';
+  const hash = await hashPassword(pwd);
+  const storedHash = localStorage.getItem(PWD_KEY);
+
+  if (hash === storedHash) {
+    errorEl.textContent = '';
+    sessionStorage.setItem(AUTH_KEY, 'true');
+    document.getElementById('loginOverlay').classList.add('hidden');
+    renderDashboard();
+  } else {
+    errorEl.textContent = '密码错误，请重试';
+  }
+  btn.disabled = false;
+  btn.textContent = '进入系统';
+}
+
+// 初始化登录界面
+function initLoginUI() {
+  const titleEl = document.getElementById('loginTitle');
+  const subtitleEl = document.getElementById('loginSubtitle');
+  const confirmGroup = document.getElementById('confirmPwdGroup');
+  const btn = document.getElementById('loginBtn');
+  const hintEl = document.getElementById('loginHint');
+
+  if (isPasswordSet()) {
+    titleEl.textContent = '欢迎回来';
+    subtitleEl.textContent = '请输入密码进入系统';
+    confirmGroup.style.display = 'none';
+    btn.textContent = '进入系统';
+    hintEl.textContent = '';
+  } else {
+    titleEl.textContent = '设置访问密码';
+    subtitleEl.textContent = '首次使用，请设置系统密码';
+    confirmGroup.style.display = 'block';
+    btn.textContent = '设置密码';
+    hintEl.textContent = '密码将保存在本地浏览器中';
+  }
+}
 
 // ========== Toast ==========
 function showToast(msg, type='info') {
@@ -3065,7 +3324,13 @@ document.addEventListener('change', function(e) {
 
 // ========== Init ==========
 function init() {
-  renderDashboard();
+  initLoginUI();
+  if (isAuthenticated()) {
+    // 已认证，隐藏登录覆盖层
+    document.getElementById('loginOverlay').classList.add('hidden');
+    renderDashboard();
+  }
+  // 未认证时，登录覆盖层默认显示
 }
 
 init();
